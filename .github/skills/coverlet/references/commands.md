@@ -5,7 +5,7 @@
 Coverlet provides three drivers for collecting code coverage. Choose exactly one per test project.
 
 | Driver | Package | Use Case |
-|--------|---------|----------|
+| --- | --- | --- |
 | Collector | `coverlet.collector` | VSTest integration via `--collect` |
 | MSBuild | `coverlet.msbuild` | MSBuild property-driven coverage |
 | Console | `coverlet.console` | Standalone CLI tool |
@@ -116,7 +116,7 @@ dotnet test /p:CollectCoverage=true /p:CoverletOutput=./coverage/coverage.xml
 ### MSBuild Properties
 
 | Property | Description | Default |
-|----------|-------------|---------|
+| --- | --- | --- |
 | `CollectCoverage` | Enable coverage collection | `false` |
 | `CoverletOutputFormat` | Output format(s) | `json` |
 | `CoverletOutput` | Output path | `./` |
@@ -221,7 +221,7 @@ coverlet <TEST_ASSEMBLY>.dll \
 ### Console Tool Arguments
 
 | Argument | Description |
-|----------|-------------|
+| --- | --- |
 | `--target` | Executable to run tests |
 | `--targetargs` | Arguments for target executable |
 | `--output` | Output path |

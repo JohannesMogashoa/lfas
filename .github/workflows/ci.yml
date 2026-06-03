@@ -2,23 +2,24 @@ name: CI
 
 on:
   pull_request:
-    branches: [ main, develop ]
+    branches: [ master ]
   push:
-    branches: [ main, develop ]
+    branches: [ master ]
+  workflow_dispatch:
 
 permissions:
   contents: read
   checks: write
-  pull-requests: write
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 env:
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '10.0.x'
   DOTNET_NOLOGO: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
   build-test:
@@ -54,17 +55,17 @@ jobs:
             **/packages.lock.json
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore LFAS.slnx
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore -warnaserror
+        run: dotnet build LFAS.slnx --configuration Release --no-restore -warnaserror
 
       - name: Test
         run: >
-          dotnet test
+          dotnet test LFAS.slnx
           --configuration Release
           --no-build
-          --logger "trx;LogFileName=test-results.trx"
+          --logger "trx;LogFilePrefix=test-results"
           --collect:"XPlat Code Coverage"
           --results-directory TestResults
         env:

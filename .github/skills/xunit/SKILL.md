@@ -70,7 +70,6 @@ If xUnit is requested but not configured:
 4. Add repo test commands and runner notes to `AGENTS.md`.
 5. Run `dotnet test TEST_PROJECT.csproj` or repo-defined xUnit command and return `status: configured` or `status: improved`.
 
-
 ## Deliver
 
 - xUnit tests that match the repo's active xUnit version and runner

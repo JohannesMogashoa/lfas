@@ -22,7 +22,7 @@ license: MIT
 ## Inputs
 
 | Input | Required | Description |
-|-------|----------|-------------|
+| --- | --- | --- |
 | ASP.NET Core project | Yes | The application to instrument |
 | Observability backend | No | Where to export: OTLP collector, Aspire dashboard, Jaeger (accepts OTLP natively) |
 
@@ -280,7 +280,7 @@ using var activity = MessageSource.StartActivity("ProcessMessage",
 ## Common Pitfalls
 
 | Pitfall | Solution |
-|---------|----------|
+| --- | --- |
 | `ActivitySource.StartActivity` returns null | Source name doesn't match any `AddSource()` — names must match exactly |
 | Traces not appearing in exporter | Check OTLP endpoint: gRPC uses port 4317, HTTP uses 4318 |
 | Missing HTTP client spans | Ensure `AddHttpClientInstrumentation()` is registered; it works for both `IHttpClientFactory`/DI and `new HttpClient()` (use `IHttpClientFactory` for lifetime management) |

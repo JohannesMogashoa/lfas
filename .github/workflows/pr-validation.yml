@@ -2,19 +2,16 @@ name: PR Validation
 
 on:
   pull_request:
-    branches: [ main, develop ]
+    branches: [ master ]
+  workflow_dispatch:
 
 permissions:
   contents: read
   pull-requests: read
-  security-events: write
 
 concurrency:
-  group: pr-validation-${{ github.event.pull_request.number }}
+  group: pr-validation-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
-
-env:
-  DOTNET_VERSION: '9.0.x'
 
 jobs:
   validate:
@@ -39,12 +36,12 @@ jobs:
       - name: Validate shell scripts
         shell: bash
         run: |
-          find scripts -name "*.sh" -print0 2>/dev/null | xargs -0 -r bash -n
+          git ls-files "*.sh" -z | xargs -0 -r bash -n
 
       - name: Validate JSON files
         shell: bash
         run: |
-          find . -name "*.json" -not -path "./.git/*" -print0 | xargs -0 -r -I{} jq empty "{}"
+          git ls-files "*.json" -z | xargs -0 -r -I{} jq empty "{}"
 
       - name: Validate YAML parse
         uses: ibiqlik/action-yamllint@v3
@@ -56,3 +53,5 @@ jobs:
               line-length: disable
               truthy: disable
               comments-indentation: disable
+              document-start: disable
+              brackets: disable

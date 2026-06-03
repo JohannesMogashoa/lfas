@@ -1,9 +1,11 @@
 # ADR-0003: Use a Local-first AI Boundary
 
 ## Status
+
 Accepted
 
 ## Context
+
 LFAS may use AI to assist with categorization, explanations, recommendations,
 and narrative reporting. The source material includes bank statements and other
 financial records that can contain account numbers, card numbers, names,
@@ -14,6 +16,7 @@ bounded by privacy controls, deterministic preprocessing, and clear data
 contracts.
 
 ## Decision
+
 Adopt a local-first AI boundary.
 
 AI integrations must consume only sanitized financial summaries, derived
@@ -26,6 +29,7 @@ classification, redaction guarantees, retention behavior, provider controls,
 and user consent requirements.
 
 ## Consequences
+
 - AI features depend on deterministic extraction, validation, redaction, and
   summarization steps before prompts are built.
 - Prompt contracts must be inspectable and testable.
@@ -34,6 +38,7 @@ and user consent requirements.
 - Privacy and audit requirements shape the AI architecture from the start.
 
 ## Implementation Guidance
+
 - Keep AI adapters and model clients outside the domain layer.
 - Build prompts from sanitized contracts rather than raw entities or files.
 - Store enough prompt/audit metadata to explain what data class was used.

@@ -178,6 +178,7 @@ services.AddOptions<EmailSettings>()
 ```
 
 **Solutions**:
+
 - Use User Secrets for local development
 - Use environment variables for production
 - Use Azure Key Vault, AWS Secrets Manager, or similar

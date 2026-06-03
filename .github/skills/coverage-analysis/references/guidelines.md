@@ -44,7 +44,7 @@
 - **Emoji for visual scanning in generated output** (defined in `references/output-format.md`):
 
   | Symbol | Meaning |
-  |--------|---------|
+  | --- | --- |
   | 🔥 | hotspots |
   | 📋 | gaps |
   | 💡 | recommendations |
