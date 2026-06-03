@@ -1,46 +1,52 @@
-# LFAS GitHub Automation Kit
+# LFAS
 
-This kit bootstraps the GitHub backlog for **LFAS — Local Financial Analysis System**.
+LFAS is a fully .NET monorepo for the **Local Financial Analysis System**. The solution is centered on .NET Aspire for local orchestration and uses Blazor for the frontend.
 
-It is structured as:
+## Solution Shape
 
 ```text
-MVP  -> Statement Intelligence
-MDP  -> Financial Decision Platform
-V1   -> Commercial SaaS Platform
+LFAS.slnx
+src/
+  LFAS.AppHost/           Aspire orchestrator for the platform
+  LFAS.ServiceDefaults/   Shared health, telemetry, resilience, and discovery defaults
+  LFAS.Api/               ASP.NET Core API
+  LFAS.Web/               Blazor web frontend
+  LFAS.Application/       Application use cases
+  LFAS.Domain/            Domain model and business rules
+  LFAS.Infrastructure/    Persistence and external integrations
+  LFAS.SharedKernel/      Cross-cutting domain primitives
+  LFAS.StatementParser/   Bank statement ingestion/parsing
+  LFAS.Reporting/         Reporting workflows
+  LFAS.AI/                AI-assisted analysis capabilities
+tests/
+  LFAS.UnitTests/
+  LFAS.IntegrationTests/
+artifacts/
+  Backlog, roadmap, ADR, and bootstrap artifacts
 ```
 
-## Contents
+## Run Locally
 
-- `scripts/bootstrap.sh` — one-command GitHub bootstrap for macOS/Linux.
-- `portfolio/portfolio.json` — authoritative backlog data.
-- `portfolio/issues/**` — generated Markdown issue bodies.
-- `backlog/LFAS_Backlog.csv` — importable backlog.
-- `backlog/LFAS_Backlog.xlsx` — reviewable backlog workbook.
-- `.github/ISSUE_TEMPLATE/**` — GitHub issue templates.
-- `.github/workflows/ci.yml` — starter CI workflow.
-- `docs/**` — roadmap, architecture, execution order, ADRs.
-
-## Backlog Size
-
-- Total items: **234**
-- Epics: **19**
-- Features: **46**
-- Stories: **169**
-
-## Start Here
-
-Read:
-
-1. `docs/00-RUN-SEQUENCE.md`
-2. `docs/01-PORTFOLIO-ROADMAP.md`
-3. `docs/02-GITHUB-BOOTSTRAP.md`
-
-Then execute:
+Run the Aspire AppHost:
 
 ```bash
-chmod +x scripts/*.sh
-./scripts/setup-dev.sh
-./scripts/dry-run.sh
-./scripts/bootstrap.sh
+dotnet run --project src/LFAS.AppHost/LFAS.AppHost.csproj
 ```
+
+The AppHost orchestrates:
+
+- `postgres` with `pgAdmin`
+- `api` from `LFAS.Api`
+- `web` from `LFAS.Web`
+
+## Development
+
+Useful commands:
+
+```bash
+dotnet restore LFAS.slnx
+dotnet build LFAS.slnx
+dotnet test LFAS.slnx
+```
+
+Historical backlog and GitHub bootstrap material is kept under `artifacts/`.
