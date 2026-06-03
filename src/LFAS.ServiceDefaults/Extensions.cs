@@ -1,11 +1,18 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using Serilog;
+using Serilog.Context;
+using Serilog.Events;
+using Serilog.Formatting.Compact;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -13,6 +20,8 @@ public static class Extensions
 {
     public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
+        builder.ConfigureStructuredLogging();
+
         builder.ConfigureOpenTelemetry();
 
         builder.AddDefaultHealthChecks();
@@ -23,6 +32,34 @@ public static class Extensions
         {
             http.AddStandardResilienceHandler();
             http.AddServiceDiscovery();
+        });
+
+        return builder;
+    }
+
+    public static TBuilder ConfigureStructuredLogging<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    {
+        var logFilePath = builder.Configuration["LFAS:Logging:FilePath"] ?? "logs/lfas-.ndjson";
+
+        builder.Logging.ClearProviders();
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddTransient<IStartupFilter, CorrelationIdLoggingStartupFilter>();
+        builder.Services.AddSerilog((_, loggerConfiguration) =>
+        {
+            loggerConfiguration
+                .ReadFrom.Configuration(builder.Configuration)
+                .MinimumLevel.Information()
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .Enrich.FromLogContext()
+                .Enrich.WithProperty("Application", builder.Environment.ApplicationName)
+                .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
+                .WriteTo.Console(new CompactJsonFormatter())
+                .WriteTo.File(
+                    new CompactJsonFormatter(),
+                    logFilePath,
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 14,
+                    shared: true);
         });
 
         return builder;
@@ -82,5 +119,43 @@ public static class Extensions
         }
 
         return app;
+    }
+}
+
+internal sealed class CorrelationIdLoggingStartupFilter : IStartupFilter
+{
+    public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) =>
+        app =>
+        {
+            app.UseMiddleware<CorrelationIdLoggingMiddleware>();
+            app.UseSerilogRequestLogging();
+
+            next(app);
+        };
+}
+
+internal sealed class CorrelationIdLoggingMiddleware(RequestDelegate next)
+{
+    public const string HeaderName = "X-Correlation-ID";
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var correlationId = ResolveCorrelationId(context);
+
+        context.Response.Headers[HeaderName] = correlationId;
+
+        using (LogContext.PushProperty("CorrelationId", correlationId))
+        {
+            await next(context);
+        }
+    }
+
+    private static string ResolveCorrelationId(HttpContext context)
+    {
+        var headerValue = context.Request.Headers[HeaderName].FirstOrDefault();
+
+        return Guid.TryParse(headerValue, out var parsed)
+            ? parsed.ToString()
+            : Guid.NewGuid().ToString();
     }
 }
