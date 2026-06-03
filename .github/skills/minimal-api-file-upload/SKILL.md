@@ -7,11 +7,13 @@ license: MIT
 # Implementing File Uploads in ASP.NET Core Minimal APIs
 
 ## When to Use
+
 - File upload endpoints in ASP.NET Core minimal APIs (.NET 8+)
 - Handling IFormFile or IFormFileCollection parameters
 - When you need size limits, content type validation, or streaming large files
 
 ## When Not to Use
+
 - MVC controllers → `[FromForm] IFormFile` works directly with attributes
 - Simple JSON body → no file upload needed
 - Very large files (> 1GB) → use streaming with `MultipartReader` instead
@@ -19,7 +21,7 @@ license: MIT
 ## Inputs
 
 | Input | Required | Description |
-|-------|----------|-------------|
+| --- | --- | --- |
 | File parameter(s) | Yes | IFormFile or IFormFileCollection |
 | Size limits | Yes | Max file/request size |
 | Allowed types | No | Content type or extension restrictions |

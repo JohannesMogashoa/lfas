@@ -36,7 +36,8 @@ compatibility: "Requires an ASP.NET Core project or solution."
    - endpoint registrations and routing
 
 2. **Follow the correct middleware order:**
-   ```
+
+   ```text
    ExceptionHandler → HttpsRedirection → Static Files → Routing
    → CORS → Authentication → Authorization → Rate Limiting
    → Response Caching → Custom Middleware → Endpoints
@@ -60,6 +61,7 @@ compatibility: "Requires an ASP.NET Core project or solution."
 ## Middleware Patterns
 
 ### Correct Order Matters
+
 ```csharp
 var app = builder.Build();
 
@@ -77,6 +79,7 @@ app.MapControllers();                   // 11. Endpoints
 ```
 
 ### Custom Middleware Pattern
+
 ```csharp
 public class RequestTimingMiddleware
 {
@@ -102,6 +105,7 @@ public class RequestTimingMiddleware
 ## Configuration Patterns
 
 ### Strongly-Typed Options
+
 ```csharp
 // appsettings.json
 {
@@ -123,6 +127,7 @@ public class EmailService(IOptions<EmailSettings> options)
 ```
 
 ### Environment-Based Configuration
+
 ```csharp
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false)
@@ -134,6 +139,7 @@ builder.Configuration
 ## Security Patterns
 
 ### Authentication Setup
+
 ```csharp
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -153,6 +159,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 ```
 
 ### Authorization Policies
+
 ```csharp
 builder.Services.AddAuthorization(options =>
 {
@@ -166,7 +173,7 @@ builder.Services.AddAuthorization(options =>
 ## Anti-Patterns to Avoid
 
 | Anti-Pattern | Why It's Bad | Better Approach |
-|--------------|--------------|-----------------|
+| --- | --- | --- |
 | `new HttpClient()` | Socket exhaustion | `IHttpClientFactory` |
 | Sync-over-async (`Task.Result`) | Thread pool starvation | `await` properly |
 | Storing secrets in `appsettings.json` | Security risk | User Secrets, Key Vault |

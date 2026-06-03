@@ -6,7 +6,7 @@ Copy the template below **verbatim** for all fixed elements (headings, table hea
 # Coverage Analysis - <ProjectName>
 
 | Metric | Value |
-|--------|-------|
+| --- | --- |
 | **Date** | <YYYY-MM-DD> |
 | **Line Coverage** | <N>% |
 | **Branch Coverage** | <N>% |
@@ -16,7 +16,7 @@ Copy the template below **verbatim** for all fixed elements (headings, table hea
 ## Summary
 
 | Metric | Value | Threshold | Status |
-|--------|-------|-----------|--------|
+| --- | --- | --- | --- |
 | **Line Coverage** | <N>% | <line_threshold>% | ✅ / ❌ |
 | **Branch Coverage** | <N>% | <branch_threshold>% | ✅ / ❌ |
 | **Methods Analyzed** | <N> | — | — |
@@ -44,7 +44,7 @@ If all test projects already had a coverage provider, omit this note.
 Methods flagged as high-risk: complex code with low test coverage that is dangerous to change.
 
 | Rank | Method | Class | File | Complexity | Coverage | CRAP Score |
-|------|--------|-------|------|-----------|---------|-----------|
+| --- | --- | --- | --- | --- | --- | --- |
 | 1 | `<method>` | `<class>` | `<file>` | <N> | <N>% | **<score>** |
 | … | … | … | … | … | … | … |
 
@@ -58,7 +58,7 @@ Methods flagged as high-risk: complex code with low test coverage that is danger
 Files below the line or branch coverage threshold, ordered by uncovered lines descending:
 
 | File | Line Coverage | Branch Coverage | Uncovered Lines | Priority |
-|------|--------------|----------------|----------------|---------|
+| --- | --- | --- | --- | --- |
 | `<file>` | <N>% | <N>% | <N> | 🔴 HIGH / 🟡 MED / 🟢 LOW |
 | … | … | … | … | … |
 
@@ -75,7 +75,7 @@ Files below the line or branch coverage threshold, ordered by uncovered lines de
 ## 📁 Reports
 
 | Report | Path |
-|--------|------|
+| --- | --- |
 | Markdown summary (this file) | `<coverageDir>/coverage-analysis.md` |
 | Raw Cobertura XML | `<coberturaXmlPathsUsedForAnalysis>` |
 | HTML (browsable) | `<coverageDir>/reports/index.html` *or* `Not generated (optional — request HTML reports to enable)` |

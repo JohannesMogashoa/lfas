@@ -226,7 +226,7 @@ var settings = configuration.Get<AppSettings>();
 ### IOptions vs IOptionsSnapshot vs IOptionsMonitor
 
 | Interface | Lifetime | Reloads | Use Case |
-|-----------|----------|---------|----------|
+| --- | --- | --- | --- |
 | `IOptions<T>` | Singleton | No | Static configuration |
 | `IOptionsSnapshot<T>` | Scoped | Per request | Web apps with reloadable config |
 | `IOptionsMonitor<T>` | Singleton | Yes (notifications) | Long-running services |
