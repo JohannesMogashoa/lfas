@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LFAS.AI/LFAS.AI.csproj" />
+    <Project Path="src/LFAS.Api/LFAS.Api.csproj" />
+    <Project Path="src/LFAS.Application/LFAS.Application.csproj" />
+    <Project Path="src/LFAS.Domain/LFAS.Domain.csproj" />
+    <Project Path="src/LFAS.Infrastructure/LFAS.Infrastructure.csproj" />
+    <Project Path="src/LFAS.Reporting/LFAS.Reporting.csproj" />
+    <Project Path="src/LFAS.SharedKernel/LFAS.SharedKernel.csproj" />
+    <Project Path="src/LFAS.StatementParser/LFAS.StatementParser.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LFAS.IntegrationTests/LFAS.IntegrationTests.csproj" />
+    <Project Path="tests/LFAS.UnitTests/LFAS.UnitTests.csproj" />
+  </Folder>
+</Solution>
