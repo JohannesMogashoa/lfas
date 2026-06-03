@@ -1,10 +1,12 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
+var databaseName = builder.Configuration["LFAS:Postgres:Database"] ?? "lfas";
+
 var postgres = builder
     .AddPostgres("postgres")
     .WithPgAdmin();
 
-var database = postgres.AddDatabase("lfasdb", "lfas");
+var database = postgres.AddDatabase("lfasdb", databaseName);
 
 var api = builder
     .AddProject<Projects.LFAS_Api>("api")
