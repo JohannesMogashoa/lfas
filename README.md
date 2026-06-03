@@ -66,4 +66,7 @@ dotnet test LFAS.slnx
 See [Developer Bootstrap](docs/developer-bootstrap.md) for platform-specific
 details and skip options.
 
+See [Local Configuration and Secrets](docs/local-configuration.md) for
+appsettings, `.env`, and user-secrets guidance.
+
 Historical backlog and GitHub bootstrap material is kept under `artifacts/`.

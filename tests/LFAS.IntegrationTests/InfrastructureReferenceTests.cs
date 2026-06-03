@@ -47,7 +47,8 @@ public class InfrastructureReferenceTests
 
         Assert.Contains(".AddPostgres(\"postgres\")", appHostProgram);
         Assert.Contains(".WithPgAdmin()", appHostProgram);
-        Assert.Contains("postgres.AddDatabase(\"lfasdb\", \"lfas\")", appHostProgram);
+        Assert.Contains("builder.Configuration[\"LFAS:Postgres:Database\"] ?? \"lfas\"", appHostProgram);
+        Assert.Contains("postgres.AddDatabase(\"lfasdb\", databaseName)", appHostProgram);
         Assert.Contains(".AddProject<Projects.LFAS_Api>(\"api\")", appHostProgram);
         Assert.Contains(".AddProject<Projects.LFAS_Web>(\"web\")", appHostProgram);
         Assert.Contains(".WithReference(database)", appHostProgram);
