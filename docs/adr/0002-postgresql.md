@@ -1,9 +1,11 @@
 # ADR-0002: Use PostgreSQL
 
 ## Status
+
 Accepted
 
 ## Context
+
 LFAS needs a reliable relational datastore for statement metadata,
 normalization outputs, validation results, derived financial facts, audit
 records, and future commercial platform data. The project also needs a local
@@ -14,6 +16,7 @@ transactional behavior, mature indexing, strong constraints, and operational
 visibility matter more than schemaless flexibility for the primary store.
 
 ## Decision
+
 Use PostgreSQL as the primary relational datastore for LFAS.
 
 PostgreSQL will be the default persistence target for transactional application
@@ -22,6 +25,7 @@ Local development should run PostgreSQL through the repository's Aspire and
 Docker Compose setup.
 
 ## Consequences
+
 - Relational constraints can protect financial data integrity.
 - Migrations become part of the delivery workflow for persistence changes.
 - Integration tests can target the same database engine used in deployed
@@ -30,6 +34,7 @@ Docker Compose setup.
   additional store with a separate decision.
 
 ## Implementation Guidance
+
 - Keep persistence concerns in `LFAS.Infrastructure`.
 - Prefer explicit schemas, constraints, and indexes for financial records.
 - Treat migrations as reviewable source artifacts.
