@@ -68,6 +68,23 @@ public class InfrastructureReferenceTests
         Assert.Contains("app.MapDefaultEndpoints();", program);
     }
 
+    [Fact]
+    public void Service_defaults_configure_structured_logging_with_correlation_ids()
+    {
+        var project = File.ReadAllText(RepositoryPaths.ProjectFile("LFAS.ServiceDefaults"));
+        var serviceDefaults = File.ReadAllText(RepositoryPaths.File("src", "LFAS.ServiceDefaults", "Extensions.cs"));
+
+        Assert.Contains("Serilog.AspNetCore", project);
+        Assert.Contains("ConfigureStructuredLogging", serviceDefaults);
+        Assert.Contains("builder.Logging.ClearProviders()", serviceDefaults);
+        Assert.Contains("WriteTo.Console(new CompactJsonFormatter())", serviceDefaults);
+        Assert.Contains("WriteTo.File(", serviceDefaults);
+        Assert.Contains("LFAS:Logging:FilePath", serviceDefaults);
+        Assert.Contains("UseSerilogRequestLogging", serviceDefaults);
+        Assert.Contains("X-Correlation-ID", serviceDefaults);
+        Assert.Contains("LogContext.PushProperty(\"CorrelationId\"", serviceDefaults);
+    }
+
     private static IReadOnlyCollection<string> ReadProjectReferences(string projectPath)
     {
         var document = XDocument.Load(projectPath);

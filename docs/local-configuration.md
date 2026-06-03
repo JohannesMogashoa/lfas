@@ -70,6 +70,7 @@ Environment variables override appsettings using double underscores:
 ConnectionStrings__lfasdb="Host=localhost;Port=5432;Database=lfas;Username=lfas;Password=replace-me"
 LFAS__Storage__RootPath="./storage"
 LFAS__AI__OllamaBaseUrl="http://localhost:11434"
+LFAS__Logging__FilePath="logs/lfas-.ndjson"
 ```
 
 Use `.env.example` as a template only. Copy it to `.env` for local Docker or
@@ -85,3 +86,4 @@ shell workflows and replace placeholders there.
 | `LFAS:AI:Provider` | AI provider mode, currently `Local` | No |
 | `LFAS:AI:OllamaBaseUrl` | Local Ollama endpoint | No |
 | `LFAS:Api:BaseUrl` | Web app API endpoint | No |
+| `LFAS:Logging:FilePath` | Rolling structured log file path | No |
