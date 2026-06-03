@@ -42,7 +42,7 @@ Use this skill when the user mentions test coverage, coverage gaps, code risk, C
 ## Inputs
 
 | Input | Required | Default | Description |
-|-------|----------|---------|-------------|
+| --- | --- | --- | --- |
 | Project/solution path | No | Current directory | Path to the .NET solution or project |
 | Line coverage threshold | No | 80% | Minimum acceptable line coverage |
 | Branch coverage threshold | No | 70% | Minimum acceptable branch coverage |

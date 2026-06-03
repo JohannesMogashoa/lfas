@@ -29,13 +29,12 @@ Migrate .NET test projects from xUnit.net v2 to xUnit.net v3. The outcome is a s
 ## Inputs
 
 | Input | Required | Description |
-|-------|----------|-------------|
+| --- | --- | --- |
 | Test project or solution | Yes | The .NET project or solution containing xUnit.net v2 test projects |
 
 ## Workflow
 
 > **Commit strategy:** Commit after each major step so the migration is reviewable and bisectable. Separate project file changes from code changes.
-
 > **Prioritization:** Steps 1-5 are required for every migration. Steps 6-12 are conditional — only apply the ones relevant to the project's code patterns. Skip steps that don't apply.
 
 ### Step 1: Identify xUnit.net projects and verify compatibility

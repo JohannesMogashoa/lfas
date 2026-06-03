@@ -2,9 +2,10 @@ name: Markdown
 
 on:
   pull_request:
-    branches: [ main, develop ]
+    branches: [ master ]
   push:
-    branches: [ main, develop ]
+    branches: [ master ]
+  workflow_dispatch:
 
 permissions:
   contents: read

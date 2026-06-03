@@ -6,7 +6,7 @@ Coverlet uses filter expressions to include or exclude assemblies and types from
 
 ### Basic Syntax
 
-```
+```text
 [<ASSEMBLY_FILTER>]<TYPE_FILTER>
 ```
 
@@ -18,7 +18,7 @@ Coverlet uses filter expressions to include or exclude assemblies and types from
 ### Examples
 
 | Pattern | Description |
-|---------|-------------|
+| --- | --- |
 | `[*]*` | All types in all assemblies |
 | `[MyApp]*` | All types in MyApp assembly |
 | `[MyApp]MyApp.Services.*` | All types in Services namespace |
@@ -148,7 +148,7 @@ Apply and exclude:
 ### Common File Exclusions
 
 | Pattern | Description |
-|---------|-------------|
+| --- | --- |
 | `**/Migrations/*.cs` | EF Core migrations |
 | `**/Generated/*.cs` | Generated code folders |
 | `**/obj/**/*.cs` | Build output |
@@ -304,7 +304,7 @@ coverlet ... --verbosity detailed
 ### Common Issues
 
 | Issue | Solution |
-|-------|----------|
+| --- | --- |
 | Pattern not matching | Check assembly name vs namespace |
 | Wildcards not working | Ensure proper escaping in shell |
 | Files still covered | Use absolute paths in ExcludeByFile |

@@ -22,6 +22,7 @@ This document catalogs common mistakes and anti-patterns in ASP.NET Core develop
 ### Creating HttpClient Instances Directly
 
 **Anti-Pattern:**
+
 ```csharp
 public class WeatherService
 {
@@ -37,6 +38,7 @@ public class WeatherService
 **Problem:** Creating `HttpClient` directly leads to socket exhaustion. Each `HttpClient` instance opens new TCP connections and disposing it does not immediately release sockets (they stay in TIME_WAIT state).
 
 **Correct Approach:**
+
 ```csharp
 // Registration
 builder.Services.AddHttpClient<IWeatherService, WeatherService>(client =>
@@ -65,6 +67,7 @@ public class WeatherService : IWeatherService
 ### Using Static HttpClient Without Respecting DNS Changes
 
 **Anti-Pattern:**
+
 ```csharp
 public static class ApiClient
 {
@@ -83,6 +86,7 @@ public static class ApiClient
 **Problem:** Static HttpClient instances cache DNS indefinitely. If the server's IP address changes, the client will continue to use the old IP.
 
 **Correct Approach:**
+
 ```csharp
 // Use IHttpClientFactory which handles DNS rotation
 builder.Services.AddHttpClient("api", client =>
@@ -99,6 +103,7 @@ builder.Services.AddHttpClient("api", client =>
 ### Sync-Over-Async (Blocking on Async Code)
 
 **Anti-Pattern:**
+
 ```csharp
 public class UserController : ControllerBase
 {
@@ -120,6 +125,7 @@ public class UserController : ControllerBase
 **Problem:** Blocking on async code can cause deadlocks (especially with synchronization contexts) and wastes thread pool threads. The thread waits instead of being released to handle other requests.
 
 **Correct Approach:**
+
 ```csharp
 [HttpGet("{id}")]
 public async Task<IActionResult> GetUser(int id)
@@ -132,6 +138,7 @@ public async Task<IActionResult> GetUser(int id)
 ### Async Void
 
 **Anti-Pattern:**
+
 ```csharp
 public class LoggingMiddleware
 {
@@ -153,6 +160,7 @@ public class LoggingMiddleware
 **Problem:** `async void` methods cannot be awaited, exceptions cannot be caught, and if an exception occurs it will crash the process.
 
 **Correct Approach:**
+
 ```csharp
 public async Task InvokeAsync(HttpContext context)
 {
@@ -164,6 +172,7 @@ public async Task InvokeAsync(HttpContext context)
 ### Not Using ConfigureAwait in Library Code
 
 **Anti-Pattern (in library/shared code):**
+
 ```csharp
 public class DataService
 {
@@ -178,6 +187,7 @@ public class DataService
 **Problem:** In library code, not using `ConfigureAwait(false)` captures the synchronization context unnecessarily, which can cause performance issues and potential deadlocks when called from UI applications.
 
 **Correct Approach (for library code):**
+
 ```csharp
 public async Task<Data> GetDataAsync()
 {
@@ -191,6 +201,7 @@ Note: In ASP.NET Core application code (controllers, services directly serving r
 ### Async Over Sync
 
 **Anti-Pattern:**
+
 ```csharp
 public Task<int> CalculateAsync(int value)
 {
@@ -207,6 +218,7 @@ public Task SaveAsync(Data data)
 **Problem:** Wrapping synchronous code in `Task.Run` wastes thread pool threads. Returning `Task.CompletedTask` after sync work is misleading and provides no benefit.
 
 **Correct Approach:**
+
 ```csharp
 // Either keep it synchronous if there's nothing to await
 public int Calculate(int value)
@@ -228,6 +240,7 @@ public async Task SaveAsync(Data data)
 ### Storing Secrets in appsettings.json
 
 **Anti-Pattern:**
+
 ```json
 {
   "ConnectionStrings": {
@@ -245,6 +258,7 @@ public async Task SaveAsync(Data data)
 **Problem:** Secrets committed to source control are exposed to anyone with repository access. They persist in git history even if removed later.
 
 **Correct Approach:**
+
 ```csharp
 // Development: User Secrets
 // In terminal: dotnet user-secrets set "Jwt:Key" "development-key"
@@ -266,6 +280,7 @@ builder.Configuration
 ### Hardcoding Configuration Values
 
 **Anti-Pattern:**
+
 ```csharp
 public class EmailService
 {
@@ -279,6 +294,7 @@ public class EmailService
 ```
 
 **Correct Approach:**
+
 ```csharp
 public class EmailService
 {
@@ -300,6 +316,7 @@ public class EmailService
 ### Reading Configuration in Constructor
 
 **Anti-Pattern:**
+
 ```csharp
 public class ReportService
 {
@@ -316,6 +333,7 @@ public class ReportService
 **Problem:** Bypasses the options pattern, no validation, harder to test, service knows about configuration structure.
 
 **Correct Approach:**
+
 ```csharp
 public class ReportService
 {
@@ -335,6 +353,7 @@ public class ReportService
 ### Captive Dependency (Scoped in Singleton)
 
 **Anti-Pattern:**
+
 ```csharp
 builder.Services.AddSingleton<ICacheService, CacheService>();
 builder.Services.AddScoped<IUserContext, HttpUserContext>();
@@ -353,6 +372,7 @@ public class CacheService : ICacheService
 **Problem:** A scoped service injected into a singleton is "captured" and reused for all requests, leading to stale data, wrong user context, and thread safety issues.
 
 **Correct Approach:**
+
 ```csharp
 public class CacheService : ICacheService
 {
@@ -375,6 +395,7 @@ public class CacheService : ICacheService
 ### Service Locator Pattern
 
 **Anti-Pattern:**
+
 ```csharp
 public class OrderService
 {
@@ -398,6 +419,7 @@ public class OrderService
 **Problem:** Hides dependencies, makes testing harder, class can request any service at any time, breaks explicit dependency declaration.
 
 **Correct Approach:**
+
 ```csharp
 public class OrderService
 {
@@ -420,6 +442,7 @@ public class OrderService
 ### Circular Dependencies
 
 **Anti-Pattern:**
+
 ```csharp
 public class ServiceA
 {
@@ -435,6 +458,7 @@ public class ServiceB
 **Problem:** Container cannot resolve circular dependencies. This indicates a design problem.
 
 **Correct Approach:**
+
 ```csharp
 // Option 1: Extract shared logic into a third service
 public class SharedService { }
@@ -458,6 +482,7 @@ public class ServiceA
 ### Wrong Middleware Order
 
 **Anti-Pattern:**
+
 ```csharp
 var app = builder.Build();
 
@@ -471,6 +496,7 @@ app.UseExceptionHandler("/error"); // BAD: Exception handler last
 **Problem:** Middleware order matters. Authentication before routing means route data is not available. Exception handler at the end will not catch exceptions from endpoints.
 
 **Correct Approach:**
+
 ```csharp
 app.UseExceptionHandler("/error"); // First - catches all exceptions
 app.UseHttpsRedirection();
@@ -484,6 +510,7 @@ app.MapControllers();              // Last
 ### Blocking Operations in Middleware
 
 **Anti-Pattern:**
+
 ```csharp
 public class ValidationMiddleware
 {
@@ -509,6 +536,7 @@ public class ValidationMiddleware
 ```
 
 **Correct Approach:**
+
 ```csharp
 public async Task InvokeAsync(HttpContext context)
 {
@@ -526,6 +554,7 @@ public async Task InvokeAsync(HttpContext context)
 ### Not Calling Next Unintentionally
 
 **Anti-Pattern:**
+
 ```csharp
 public async Task InvokeAsync(HttpContext context)
 {
@@ -540,6 +569,7 @@ public async Task InvokeAsync(HttpContext context)
 **Problem:** Pipeline stops without response, leading to hanging requests or empty responses.
 
 **Correct Approach:**
+
 ```csharp
 public async Task InvokeAsync(HttpContext context)
 {
@@ -561,6 +591,7 @@ public async Task InvokeAsync(HttpContext context)
 ### Swallowing Exceptions
 
 **Anti-Pattern:**
+
 ```csharp
 public async Task<Order> GetOrderAsync(int id)
 {
@@ -578,6 +609,7 @@ public async Task<Order> GetOrderAsync(int id)
 **Problem:** Hides bugs, makes debugging impossible, caller does not know something went wrong.
 
 **Correct Approach:**
+
 ```csharp
 public async Task<Order?> GetOrderAsync(int id)
 {
@@ -596,6 +628,7 @@ public async Task<Order?> GetOrderAsync(int id)
 ### Exposing Exception Details to Users
 
 **Anti-Pattern:**
+
 ```csharp
 [HttpGet("{id}")]
 public async Task<IActionResult> GetUser(int id)
@@ -620,6 +653,7 @@ public async Task<IActionResult> GetUser(int id)
 **Problem:** Exposes internal system details, potential security vulnerability, helps attackers understand system internals.
 
 **Correct Approach:**
+
 ```csharp
 // Use global exception handler with environment-aware responses
 public class GlobalExceptionHandler : IExceptionHandler
@@ -650,6 +684,7 @@ public class GlobalExceptionHandler : IExceptionHandler
 ### Catch-All Without Logging
 
 **Anti-Pattern:**
+
 ```csharp
 try
 {
@@ -663,6 +698,7 @@ catch (Exception)
 ```
 
 **Correct Approach:**
+
 ```csharp
 try
 {
@@ -689,6 +725,7 @@ catch (Exception ex)
 ### Missing HTTPS Redirection
 
 **Anti-Pattern:**
+
 ```csharp
 var app = builder.Build();
 app.MapControllers(); // BAD: No HTTPS enforcement
@@ -696,6 +733,7 @@ app.Run();
 ```
 
 **Correct Approach:**
+
 ```csharp
 if (!app.Environment.IsDevelopment())
 {
@@ -708,6 +746,7 @@ app.MapControllers();
 ### Disabled CORS (Allow All)
 
 **Anti-Pattern:**
+
 ```csharp
 builder.Services.AddCors(options =>
 {
@@ -721,6 +760,7 @@ builder.Services.AddCors(options =>
 ```
 
 **Correct Approach:**
+
 ```csharp
 builder.Services.AddCors(options =>
 {
@@ -739,6 +779,7 @@ builder.Services.AddCors(options =>
 ### SQL Injection via String Concatenation
 
 **Anti-Pattern:**
+
 ```csharp
 public async Task<User> GetUserAsync(string username)
 {
@@ -749,6 +790,7 @@ public async Task<User> GetUserAsync(string username)
 ```
 
 **Correct Approach:**
+
 ```csharp
 public async Task<User> GetUserAsync(string username)
 {
@@ -767,6 +809,7 @@ public async Task<User> GetUserAsync(string username)
 ### Missing Authorization on Sensitive Endpoints
 
 **Anti-Pattern:**
+
 ```csharp
 [HttpDelete("{id}")]
 public async Task<IActionResult> DeleteUser(int id) // BAD: No authorization
@@ -777,6 +820,7 @@ public async Task<IActionResult> DeleteUser(int id) // BAD: No authorization
 ```
 
 **Correct Approach:**
+
 ```csharp
 [Authorize(Policy = "AdminOnly")]
 [HttpDelete("{id}")]
@@ -790,6 +834,7 @@ public async Task<IActionResult> DeleteUser(int id)
 ### Storing Passwords in Plain Text
 
 **Anti-Pattern:**
+
 ```csharp
 public async Task<User> CreateUserAsync(string email, string password)
 {
@@ -804,6 +849,7 @@ public async Task<User> CreateUserAsync(string email, string password)
 ```
 
 **Correct Approach:**
+
 ```csharp
 // Use ASP.NET Core Identity or proper password hashing
 public async Task<User> CreateUserAsync(string email, string password)
@@ -825,6 +871,7 @@ public async Task<User> CreateUserAsync(string email, string password)
 ### Not Using Async I/O
 
 **Anti-Pattern:**
+
 ```csharp
 [HttpGet]
 public IActionResult GetReport()
@@ -837,6 +884,7 @@ public IActionResult GetReport()
 ```
 
 **Correct Approach:**
+
 ```csharp
 [HttpGet]
 public async Task<IActionResult> GetReport()
@@ -850,6 +898,7 @@ public async Task<IActionResult> GetReport()
 ### Loading Entire Collections into Memory
 
 **Anti-Pattern:**
+
 ```csharp
 public async Task<decimal> GetTotalRevenueAsync()
 {
@@ -860,6 +909,7 @@ public async Task<decimal> GetTotalRevenueAsync()
 ```
 
 **Correct Approach:**
+
 ```csharp
 public async Task<decimal> GetTotalRevenueAsync()
 {
@@ -871,6 +921,7 @@ public async Task<decimal> GetTotalRevenueAsync()
 ### N+1 Query Problem
 
 **Anti-Pattern:**
+
 ```csharp
 public async Task<List<OrderDto>> GetOrdersAsync()
 {
@@ -887,6 +938,7 @@ public async Task<List<OrderDto>> GetOrdersAsync()
 ```
 
 **Correct Approach:**
+
 ```csharp
 public async Task<List<OrderDto>> GetOrdersAsync()
 {
@@ -906,12 +958,14 @@ public async Task<List<OrderDto>> GetOrdersAsync()
 ### Not Using Response Compression
 
 **Anti-Pattern:**
+
 ```csharp
 var app = builder.Build();
 app.MapControllers(); // BAD: Large responses sent uncompressed
 ```
 
 **Correct Approach:**
+
 ```csharp
 builder.Services.AddResponseCompression(options =>
 {
@@ -936,6 +990,7 @@ app.MapControllers();
 ### Fat Controllers
 
 **Anti-Pattern:**
+
 ```csharp
 [HttpPost]
 public async Task<IActionResult> CreateOrder(CreateOrderRequest request)
@@ -979,6 +1034,7 @@ public async Task<IActionResult> CreateOrder(CreateOrderRequest request)
 ```
 
 **Correct Approach:**
+
 ```csharp
 [HttpPost]
 public async Task<IActionResult> CreateOrder(CreateOrderRequest request)
@@ -995,6 +1051,7 @@ public async Task<IActionResult> CreateOrder(CreateOrderRequest request)
 ### Not Using Action Filters
 
 **Anti-Pattern:**
+
 ```csharp
 [HttpPost]
 public async Task<IActionResult> Create(CreateRequest request)
@@ -1009,6 +1066,7 @@ public async Task<IActionResult> Create(CreateRequest request)
 ```
 
 **Correct Approach:**
+
 ```csharp
 // Configure globally
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -1036,6 +1094,7 @@ public class ValidateModelAttribute : ActionFilterAttribute
 ### Using DbContext as Singleton
 
 **Anti-Pattern:**
+
 ```csharp
 builder.Services.AddSingleton<MyDbContext>(); // BAD: DbContext is not thread-safe
 ```
@@ -1043,6 +1102,7 @@ builder.Services.AddSingleton<MyDbContext>(); // BAD: DbContext is not thread-sa
 **Problem:** `DbContext` is not thread-safe and tracks entities. Using it as singleton causes concurrency issues and memory leaks.
 
 **Correct Approach:**
+
 ```csharp
 builder.Services.AddDbContext<MyDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -1052,6 +1112,7 @@ builder.Services.AddDbContext<MyDbContext>(options =>
 ### Not Disposing DbContext (Manual Creation)
 
 **Anti-Pattern:**
+
 ```csharp
 public class ReportService
 {
@@ -1060,6 +1121,7 @@ public class ReportService
 ```
 
 **Correct Approach:**
+
 ```csharp
 public class ReportService
 {
@@ -1075,6 +1137,7 @@ public class ReportService
 ### Tracking Entities When Not Needed
 
 **Anti-Pattern:**
+
 ```csharp
 public async Task<List<ProductDto>> GetProductsAsync()
 {
@@ -1085,6 +1148,7 @@ public async Task<List<ProductDto>> GetProductsAsync()
 ```
 
 **Correct Approach:**
+
 ```csharp
 public async Task<List<ProductDto>> GetProductsAsync()
 {
@@ -1098,6 +1162,7 @@ public async Task<List<ProductDto>> GetProductsAsync()
 ### Lazy Loading in Web Applications
 
 **Anti-Pattern:**
+
 ```csharp
 builder.Services.AddDbContext<MyDbContext>(options =>
     options.UseLazyLoadingProxies() // BAD: Hidden N+1 queries
@@ -1107,6 +1172,7 @@ builder.Services.AddDbContext<MyDbContext>(options =>
 **Problem:** Lazy loading causes unexpected database queries, N+1 problems, and makes it hard to track what data is being loaded.
 
 **Correct Approach:**
+
 ```csharp
 // Use explicit loading with Include/ThenInclude
 var orders = await _context.Orders

@@ -18,6 +18,7 @@ This document provides detailed patterns for middleware, security, and configura
 ### Pipeline Architecture
 
 The ASP.NET Core request pipeline consists of middleware components that process requests in sequence. Each middleware can:
+
 - Handle the request and short-circuit the pipeline
 - Pass the request to the next middleware
 - Execute code before and after the next middleware
