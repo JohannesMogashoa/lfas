@@ -1,0 +1,48 @@
+name: Story
+description: Implementable engineering story
+title: "[STORY] "
+labels: ["type:story"]
+body:
+  - type: input
+    id: parent
+    attributes:
+      label: Parent Epic/Feature
+      placeholder: "MVP-E01-F01"
+  - type: textarea
+    id: story
+    attributes:
+      label: User story
+      value: |
+        As a ...
+        I want ...
+        So that ...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: Implementation tasks
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+  - type: dropdown
+    id: release
+    attributes:
+      label: Release
+      options:
+        - MVP
+        - MDP
+        - V1
+    validations:
+      required: true

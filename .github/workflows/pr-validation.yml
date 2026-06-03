@@ -1,0 +1,58 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+  pull-requests: read
+  security-events: write
+
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '9.0.x'
+
+jobs:
+  validate:
+    name: Validate Repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate no private financial sample files are committed
+        shell: bash
+        run: |
+          set -euo pipefail
+          forbidden=$(git ls-files | grep -Ei '(raw-statements|statement-storage|samples/private|fixtures/private|\.pdf\.private|\.xlsx\.private|\.csv\.private|bank-statement|account-statement)' || true)
+          if [[ -n "$forbidden" ]]; then
+            echo "Forbidden sensitive/private financial files detected:"
+            echo "$forbidden"
+            exit 1
+          fi
+
+      - name: Validate shell scripts
+        shell: bash
+        run: |
+          find scripts -name "*.sh" -print0 2>/dev/null | xargs -0 -r bash -n
+
+      - name: Validate JSON files
+        shell: bash
+        run: |
+          find . -name "*.json" -not -path "./.git/*" -print0 | xargs -0 -r -I{} jq empty "{}"
+
+      - name: Validate YAML parse
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .github/workflows docker-compose.yml
+          config_data: |
+            extends: default
+            rules:
+              line-length: disable
+              truthy: disable
+              comments-indentation: disable
