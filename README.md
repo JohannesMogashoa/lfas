@@ -43,6 +43,18 @@ The AppHost orchestrates:
 
 ## Development
 
+Validate local prerequisites and start PostgreSQL:
+
+```bash
+./setup-dev.sh
+```
+
+On Windows, run the PowerShell bootstrap:
+
+```powershell
+.\setup-dev.ps1
+```
+
 Useful commands:
 
 ```bash
@@ -50,5 +62,8 @@ dotnet restore LFAS.slnx
 dotnet build LFAS.slnx
 dotnet test LFAS.slnx
 ```
+
+See [Developer Bootstrap](docs/developer-bootstrap.md) for platform-specific
+details and skip options.
 
 Historical backlog and GitHub bootstrap material is kept under `artifacts/`.
