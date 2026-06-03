@@ -25,7 +25,7 @@ public class Result<T> : Result
         return new Result<T> { IsSuccessful = true, Data = data };
     }
 
-    public static Result<T> Fail(string errorMessage)
+    public new static Result<T> Fail(string errorMessage)
     {
         return new Result<T> { IsSuccessful = false, ErrorMessage = errorMessage };
     }
