@@ -21,6 +21,8 @@ src/
 tests/
   LFAS.UnitTests/
   LFAS.IntegrationTests/
+docs/
+  adr/                    Architecture Decision Records
 artifacts/
   Backlog, roadmap, ADR, and bootstrap artifacts
 ```
