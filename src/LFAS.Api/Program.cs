@@ -12,6 +12,8 @@ builder.Services.AddApiHealthChecks(builder.Configuration, builder.Environment);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -39,6 +41,12 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
+
+if (app.Environment.IsEnvironment("Testing"))
+{
+    app.MapGet("/_testing/unhandled-exception", (HttpContext _) =>
+        throw new InvalidOperationException("Sensitive failure detail must not reach API clients."));
+}
 
 app.Run();
 

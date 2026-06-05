@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -28,6 +29,8 @@ public static class Extensions
         builder.ConfigureOpenTelemetry();
 
         builder.AddDefaultHealthChecks();
+
+        builder.AddDefaultExceptionHandling();
 
         builder.Services.AddServiceDiscovery();
 
@@ -109,6 +112,25 @@ public static class Extensions
         return builder;
     }
 
+    public static TBuilder AddDefaultExceptionHandling<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    {
+        builder.Services.AddProblemDetails(options =>
+        {
+            options.CustomizeProblemDetails = context =>
+            {
+                var correlationId = ResolveCorrelationId(context.HttpContext);
+
+                context.ProblemDetails.Extensions["correlationId"] = correlationId;
+                context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+                context.ProblemDetails.Instance ??= context.HttpContext.Request.Path;
+            };
+        });
+
+        builder.Services.AddExceptionHandler<SafeExceptionHandler>();
+
+        return builder;
+    }
+
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
         app.MapHealthChecks("/health/live", new HealthCheckOptions
@@ -151,6 +173,60 @@ public static class Extensions
 
         return context.Response.WriteAsync(JsonSerializer.Serialize(response, HealthJsonOptions));
     }
+
+    internal static string ResolveCorrelationId(HttpContext context)
+    {
+        var responseHeaderValue = context.Response.Headers[CorrelationIdLoggingMiddleware.HeaderName].FirstOrDefault();
+
+        if (Guid.TryParse(responseHeaderValue, out var parsedResponseHeader))
+        {
+            return parsedResponseHeader.ToString();
+        }
+
+        var requestHeaderValue = context.Request.Headers[CorrelationIdLoggingMiddleware.HeaderName].FirstOrDefault();
+
+        if (Guid.TryParse(requestHeaderValue, out var parsedRequestHeader))
+        {
+            return parsedRequestHeader.ToString();
+        }
+
+        return Guid.NewGuid().ToString();
+    }
+}
+
+internal sealed class SafeExceptionHandler(IProblemDetailsService problemDetailsService, ILogger<SafeExceptionHandler> logger) : IExceptionHandler
+{
+    public async ValueTask<bool> TryHandleAsync(
+        HttpContext httpContext,
+        Exception exception,
+        CancellationToken cancellationToken)
+    {
+        var correlationId = Extensions.ResolveCorrelationId(httpContext);
+
+        httpContext.Response.Headers[CorrelationIdLoggingMiddleware.HeaderName] = correlationId;
+
+        logger.LogError(
+            "Unhandled exception of type {ExceptionType} for request {Method} {Path}. CorrelationId: {CorrelationId}",
+            exception.GetType().Name,
+            httpContext.Request.Method,
+            httpContext.Request.Path,
+            correlationId);
+
+        httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+        return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
+        {
+            HttpContext = httpContext,
+            ProblemDetails =
+            {
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "An unexpected error occurred.",
+                Detail = "The request could not be completed. Use the correlation ID when contacting support.",
+                Type = "https://httpstatuses.com/500"
+            },
+            Exception = exception
+        });
+    }
 }
 
 internal sealed class CorrelationIdLoggingStartupFilter : IStartupFilter
@@ -171,7 +247,7 @@ internal sealed class CorrelationIdLoggingMiddleware(RequestDelegate next)
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var correlationId = ResolveCorrelationId(context);
+        var correlationId = ResolveOrCreateCorrelationId(context);
 
         context.Response.Headers[HeaderName] = correlationId;
 
@@ -181,7 +257,7 @@ internal sealed class CorrelationIdLoggingMiddleware(RequestDelegate next)
         }
     }
 
-    private static string ResolveCorrelationId(HttpContext context)
+    private static string ResolveOrCreateCorrelationId(HttpContext context)
     {
         var headerValue = context.Request.Headers[HeaderName].FirstOrDefault();
 

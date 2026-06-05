@@ -55,3 +55,15 @@ The API exposes operational health endpoints through ASP.NET Core health checks:
 Responses are JSON and include the overall status plus named check entries. The
 payload is sanitized for operational use and must not expose connection strings,
 filesystem paths, raw statement data, or exception details.
+
+## Error Handling
+
+The API uses global exception handling with Problem Details responses. Unhandled
+exceptions return HTTP `500` with a safe title, a generic detail message, and
+correlation metadata. Responses must not include stack traces, exception type
+names, raw exception messages, connection strings, filesystem paths, or raw
+financial statement data.
+
+Every API response includes `X-Correlation-ID`. If the caller supplies a valid
+correlation ID, the same value is returned and included in the Problem Details
+payload as `correlationId`; otherwise, the API generates a new value.
