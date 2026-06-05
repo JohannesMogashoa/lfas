@@ -85,6 +85,22 @@ public class InfrastructureReferenceTests
         Assert.Contains("LogContext.PushProperty(\"CorrelationId\"", serviceDefaults);
     }
 
+    [Fact]
+    public void Service_defaults_map_standard_health_endpoint_trio()
+    {
+        var serviceDefaults = File.ReadAllText(RepositoryPaths.File("src", "LFAS.ServiceDefaults", "Extensions.cs"));
+        var apiProgram = File.ReadAllText(RepositoryPaths.File("src", "LFAS.Api", "Program.cs"));
+
+        Assert.Contains("app.MapHealthChecks(\"/health/live\"", serviceDefaults);
+        Assert.Contains("app.MapHealthChecks(\"/health/ready\"", serviceDefaults);
+        Assert.Contains("app.MapHealthChecks(\"/health\"", serviceDefaults);
+        Assert.Contains("WriteHealthCheckResponse", serviceDefaults);
+        Assert.Contains("builder.Services.AddApiHealthChecks", apiProgram);
+        Assert.DoesNotContain("\"/alive\"", serviceDefaults);
+        Assert.DoesNotContain("MapEndpoints", apiProgram);
+        Assert.False(File.Exists(RepositoryPaths.File("src", "LFAS.Api", "Endpoints", "HealthChecks.cs")));
+    }
+
     private static IReadOnlyCollection<string> ReadProjectReferences(string projectPath)
     {
         var document = XDocument.Load(projectPath);

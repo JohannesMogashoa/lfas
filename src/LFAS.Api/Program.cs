@@ -1,3 +1,5 @@
+using LFAS.Api.Health;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
@@ -5,6 +7,7 @@ builder.AddServiceDefaults();
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddApiHealthChecks(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
 
@@ -38,6 +41,8 @@ app.MapGet("/weatherforecast", () =>
 .WithName("GetWeatherForecast");
 
 app.Run();
+
+public partial class Program;
 
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
