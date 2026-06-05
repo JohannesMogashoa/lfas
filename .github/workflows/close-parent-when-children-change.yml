@@ -1,0 +1,90 @@
+on:
+  issues:
+    types: [closed, reopened]
+
+permissions:
+  issues: write
+
+jobs:
+  sync-parent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close/reopen parent when sub-issues change
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const action = context.payload.action; // 'closed' or 'reopened'
+            const body = issue.body || '';
+
+            // Adjust this regex if your parent marker differs
+            const match = body.match(/Parent:\s*#(\d+)/i);
+            if (!match) {
+              core.info('No Parent: #<number> marker found in this issue; nothing to do.');
+              return;
+            }
+
+            const parentNumber = parseInt(match[1], 10);
+            if (isNaN(parentNumber)) {
+              core.info('Could not parse parent number; aborting.');
+              return;
+            }
+
+            // Search for open child issues that reference this parent
+            const q = `repo:${owner}/${repo} "Parent: #${parentNumber}" state:open`;
+            const res = await github.rest.search.issuesAndPullRequests({ q });
+
+            if (action === 'closed') {
+              if (!res.data || res.data.total_count === 0) {
+                // No open children => close the parent if it's open
+                const parent = await github.rest.issues.get({ owner, repo, issue_number: parentNumber });
+                if (parent.data.state !== 'closed') {
+                  await github.rest.issues.update({
+                    owner,
+                    repo,
+                    issue_number: parentNumber,
+                    state: 'closed'
+                  });
+                  await github.rest.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: parentNumber,
+                    body: `Automatically closed because all sub-issues referencing "Parent: #${parentNumber}" are closed.`
+                  });
+                  core.info(`Parent #${parentNumber} closed.`);
+                } else {
+                  core.info(`Parent #${parentNumber} already closed.`);
+                }
+              } else {
+                core.info(`${res.data.total_count} open child issue(s) still reference parent #${parentNumber}; parent remains open.`);
+              }
+            } else if (action === 'reopened') {
+              // Optional: reopen parent when any child is reopened
+              // Only do this if at least one child is open (including this one)
+              if (res.data && res.data.total_count > 0) {
+                const parent = await github.rest.issues.get({ owner, repo, issue_number: parentNumber });
+                if (parent.data.state === 'closed') {
+                  await github.rest.issues.update({
+                    owner,
+                    repo,
+                    issue_number: parentNumber,
+                    state: 'open'
+                  });
+                  await github.rest.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: parentNumber,
+                    body: `Automatically reopened because a sub-issue referencing "Parent: #${parentNumber}" was reopened.`
+                  });
+                  core.info(`Parent #${parentNumber} reopened.`);
+                } else {
+                  core.info(`Parent #${parentNumber} already open.`);
+                }
+              } else {
+                core.info('No open child issues found after reopen; no action on parent.');
+              }
+            } else {
+              core.info(`Unhandled action: ${action}`);
+            }
