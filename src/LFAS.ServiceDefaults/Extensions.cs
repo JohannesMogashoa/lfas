@@ -205,11 +205,14 @@ internal sealed class SafeExceptionHandler(IProblemDetailsService problemDetails
 
         httpContext.Response.Headers[CorrelationIdLoggingMiddleware.HeaderName] = correlationId;
 
+        var safeMethod = SanitizeForLog(httpContext.Request.Method);
+        var safePath = SanitizeForLog(httpContext.Request.Path.ToString());
+
         logger.LogError(
             "Unhandled exception of type {ExceptionType} for request {Method} {Path}. CorrelationId: {CorrelationId}",
             exception.GetType().Name,
-            httpContext.Request.Method,
-            httpContext.Request.Path,
+            safeMethod,
+            safePath,
             correlationId);
 
         httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
@@ -226,6 +229,16 @@ internal sealed class SafeExceptionHandler(IProblemDetailsService problemDetails
             },
             Exception = exception
         });
+    }
+
+    private static string SanitizeForLog(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        return value.Replace("\r", string.Empty).Replace("\n", string.Empty);
     }
 }
 
