@@ -35,7 +35,7 @@ public class SharedKernelTests
     public void DateRange_rejects_end_before_start()
     {
         var start = new DateTime(2026, 6, 3);
-        var end = start.AddDays(-1);
+        DateTime end = start.AddDays(-1);
 
         Action createRange = () => new DateRange(start, end);
 
@@ -97,7 +97,7 @@ public class SharedKernelTests
     [Fact]
     public void Money_Allocate_splits_amount_across_parts()
     {
-        var allocations = Money.ZAR(10m).Allocate(3);
+        Money[] allocations = Money.ZAR(10m).Allocate(3);
 
         allocations.Should().Equal(Money.ZAR(3.34m), Money.ZAR(3.33m), Money.ZAR(3.33m));
     }
