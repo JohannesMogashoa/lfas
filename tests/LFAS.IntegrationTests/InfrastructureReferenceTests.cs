@@ -7,7 +7,7 @@ public class InfrastructureReferenceTests
     [Fact]
     public void Solution_includes_all_runtime_and_test_projects()
     {
-        var solution = File.ReadAllText(RepositoryPaths.File("LFAS.slnx"));
+        string solution = File.ReadAllText(RepositoryPaths.File("LFAS.slnx"));
 
         string[] expectedProjects =
         [
@@ -26,7 +26,7 @@ public class InfrastructureReferenceTests
             "tests/LFAS.UnitTests/LFAS.UnitTests.csproj"
         ];
 
-        foreach (var project in expectedProjects)
+        foreach (string project in expectedProjects)
         {
             Assert.Contains(project, solution);
         }
@@ -35,7 +35,7 @@ public class InfrastructureReferenceTests
     [Fact]
     public void Aspire_apphost_references_the_runnable_projects()
     {
-        var references = ReadProjectReferences(RepositoryPaths.ProjectFile("LFAS.AppHost"));
+        IReadOnlyCollection<string> references = ReadProjectReferences(RepositoryPaths.ProjectFile("LFAS.AppHost"));
 
         Assert.Equal(["LFAS.Api", "LFAS.Web"], references.Order());
     }
@@ -43,12 +43,12 @@ public class InfrastructureReferenceTests
     [Fact]
     public void Aspire_apphost_orchestrates_database_api_and_web()
     {
-        var appHostProgram = File.ReadAllText(RepositoryPaths.File("src", "LFAS.AppHost", "Program.cs"));
+        string appHostProgram = File.ReadAllText(RepositoryPaths.File("src", "LFAS.AppHost", "AppHost.cs"));
 
         Assert.Contains(".AddPostgres(\"postgres\")", appHostProgram);
         Assert.Contains(".WithPgAdmin()", appHostProgram);
         Assert.Contains("builder.Configuration[\"LFAS:Postgres:Database\"] ?? \"lfas\"", appHostProgram);
-        Assert.Contains("postgres.AddDatabase(\"lfasdb\", databaseName)", appHostProgram);
+        Assert.Contains("postgres.AddDatabase(\"lfas-db\", databaseName)", appHostProgram);
         Assert.Contains(".AddProject<Projects.LFAS_Api>(\"api\")", appHostProgram);
         Assert.Contains(".AddProject<Projects.LFAS_Web>(\"web\")", appHostProgram);
         Assert.Contains(".WithReference(database)", appHostProgram);
@@ -60,8 +60,8 @@ public class InfrastructureReferenceTests
     [InlineData("LFAS.Web")]
     public void Runnable_projects_use_service_defaults(string projectName)
     {
-        var references = ReadProjectReferences(RepositoryPaths.ProjectFile(projectName));
-        var program = File.ReadAllText(RepositoryPaths.File("src", projectName, "Program.cs"));
+        IReadOnlyCollection<string> references = ReadProjectReferences(RepositoryPaths.ProjectFile(projectName));
+        string program = File.ReadAllText(RepositoryPaths.File("src", projectName, "Program.cs"));
 
         Assert.Contains("LFAS.ServiceDefaults", references);
         Assert.Contains("builder.AddServiceDefaults();", program);
@@ -71,8 +71,8 @@ public class InfrastructureReferenceTests
     [Fact]
     public void Service_defaults_configure_structured_logging_with_correlation_ids()
     {
-        var project = File.ReadAllText(RepositoryPaths.ProjectFile("LFAS.ServiceDefaults"));
-        var serviceDefaults = File.ReadAllText(RepositoryPaths.File("src", "LFAS.ServiceDefaults", "Extensions.cs"));
+        string project = File.ReadAllText(RepositoryPaths.ProjectFile("LFAS.ServiceDefaults"));
+        string serviceDefaults = File.ReadAllText(RepositoryPaths.File("src", "LFAS.ServiceDefaults", "Extensions.cs"));
 
         Assert.Contains("Serilog.AspNetCore", project);
         Assert.Contains("ConfigureStructuredLogging", serviceDefaults);
@@ -88,8 +88,8 @@ public class InfrastructureReferenceTests
     [Fact]
     public void Api_uses_safe_global_exception_handling()
     {
-        var serviceDefaults = File.ReadAllText(RepositoryPaths.File("src", "LFAS.ServiceDefaults", "Extensions.cs"));
-        var apiProgram = File.ReadAllText(RepositoryPaths.File("src", "LFAS.Api", "Program.cs"));
+        string serviceDefaults = File.ReadAllText(RepositoryPaths.File("src", "LFAS.ServiceDefaults", "Extensions.cs"));
+        string apiProgram = File.ReadAllText(RepositoryPaths.File("src", "LFAS.Api", "Program.cs"));
 
         Assert.Contains("AddDefaultExceptionHandling", serviceDefaults);
         Assert.Contains("AddProblemDetails", serviceDefaults);
@@ -103,8 +103,8 @@ public class InfrastructureReferenceTests
     [Fact]
     public void Service_defaults_map_standard_health_endpoint_trio()
     {
-        var serviceDefaults = File.ReadAllText(RepositoryPaths.File("src", "LFAS.ServiceDefaults", "Extensions.cs"));
-        var apiProgram = File.ReadAllText(RepositoryPaths.File("src", "LFAS.Api", "Program.cs"));
+        string serviceDefaults = File.ReadAllText(RepositoryPaths.File("src", "LFAS.ServiceDefaults", "Extensions.cs"));
+        string apiProgram = File.ReadAllText(RepositoryPaths.File("src", "LFAS.Api", "Program.cs"));
 
         Assert.Contains("app.MapHealthChecks(\"/health/live\"", serviceDefaults);
         Assert.Contains("app.MapHealthChecks(\"/health/ready\"", serviceDefaults);
@@ -131,7 +131,7 @@ public class InfrastructureReferenceTests
 
     private static string ProjectNameFromReference(string include)
     {
-        var normalizedPath = include.Replace('\\', Path.DirectorySeparatorChar);
+        string normalizedPath = include.Replace('\\', Path.DirectorySeparatorChar);
 
         return Path.GetFileNameWithoutExtension(normalizedPath);
     }

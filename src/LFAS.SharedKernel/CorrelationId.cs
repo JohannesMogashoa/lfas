@@ -9,7 +9,7 @@ public readonly record struct CorrelationId
     public static CorrelationId New() => new(Guid.NewGuid());
 
     public static CorrelationId From(string value) =>
-        Guid.TryParse(value, out var guid) ? new(guid) : New();
+        Guid.TryParse(value, out Guid guid) ? new(guid) : New();
 
     public override string ToString() => Value.ToString();
 

@@ -1,8 +1,6 @@
-using MediatR;
-
 namespace LFAS.SharedKernel;
 
-public interface IDomainEvent : INotification
+public interface IDomainEvent
 {
     DateTime OccurredOn { get; }
     CorrelationId CorrelationId { get; }

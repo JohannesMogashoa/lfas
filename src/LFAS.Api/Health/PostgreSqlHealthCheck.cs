@@ -9,7 +9,7 @@ public sealed class PostgreSqlHealthCheck(IConfiguration configuration) : IHealt
         HealthCheckContext context,
         CancellationToken cancellationToken = default)
     {
-        var connectionString = configuration.GetConnectionString("lfasdb");
+        string? connectionString = configuration.GetConnectionString("lfasdb");
 
         if (string.IsNullOrWhiteSpace(connectionString))
         {
@@ -22,7 +22,7 @@ public sealed class PostgreSqlHealthCheck(IConfiguration configuration) : IHealt
             await connection.OpenAsync(cancellationToken);
 
             await using var command = new NpgsqlCommand("SELECT 1", connection);
-            var result = await command.ExecuteScalarAsync(cancellationToken);
+            object? result = await command.ExecuteScalarAsync(cancellationToken);
 
             return result is 1
                 ? HealthCheckResult.Healthy("Database connection is available.")
