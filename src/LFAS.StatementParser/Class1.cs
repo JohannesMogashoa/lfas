@@ -1,4 +1,4 @@
-﻿namespace LFAS.StatementParser;
+namespace LFAS.StatementParser;
 
 public class Class1
 {

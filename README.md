@@ -22,9 +22,19 @@ tests/
   LFAS.UnitTests/
   LFAS.IntegrationTests/
 docs/
+  architecture/            Architecture overview and diagrams
   adr/                    Architecture Decision Records
-artifacts/
-  Backlog, roadmap, ADR, and bootstrap artifacts
+  configuration/          Local configuration and secrets guidance
+  development/            Developer bootstrap and workflow documentation
+  planning/               Roadmap, labels, and delivery definitions
+  testing/                Test conventions and commands
+planning/
+  backlog/                Backlog source spreadsheets
+  portfolio/              GitHub issue, label, milestone, and release data
+scripts/
+  development/            Developer bootstrap scripts
+  maintenance/            Repository maintenance scripts
+  portfolio/              GitHub portfolio automation
 ```
 
 ## Run Locally
@@ -46,13 +56,13 @@ The AppHost orchestrates:
 Validate local prerequisites and start PostgreSQL:
 
 ```bash
-./setup-dev.sh
+./scripts/development/setup-dev.sh
 ```
 
 On Windows, run the PowerShell bootstrap:
 
 ```powershell
-.\setup-dev.ps1
+.\scripts\development\setup-dev.ps1
 ```
 
 Useful commands:
@@ -63,10 +73,12 @@ dotnet build LFAS.slnx
 dotnet test LFAS.slnx
 ```
 
-See [Developer Bootstrap](docs/developer-bootstrap.md) for platform-specific
-details and skip options.
+See [Developer Bootstrap](docs/development/developer-bootstrap.md) for
+platform-specific details and skip options.
 
-See [Local Configuration and Secrets](docs/local-configuration.md) for
+See [Local Configuration and Secrets](docs/configuration/local-configuration.md) for
 appsettings, `.env`, and user-secrets guidance.
 
-Historical backlog and GitHub bootstrap material is kept under `artifacts/`.
+See [Testing](docs/testing/unit-testing.md) for unit test conventions.
+
+See [Planning](planning/README.md) for backlog and portfolio source data.
