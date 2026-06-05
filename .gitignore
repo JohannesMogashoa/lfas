@@ -29,7 +29,6 @@ coverage-results/
 # .NET generated
 project.lock.json
 project.assets.json
-artifacts/
 .nuget/
 packages/
 *.user
@@ -160,6 +159,7 @@ ai-traces/
 *.bin
 
 # Reports and generated exports
+artifacts/
 exports/
 reports/generated/
 *.report.pdf

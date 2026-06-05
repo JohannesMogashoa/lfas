@@ -13,13 +13,14 @@ specific, and updated by creating a new ADR when a decision is superseded.
 | [0001](0001-clean-architecture.md) | Use Clean Architecture | Accepted |
 | [0002](0002-postgresql.md) | Use PostgreSQL | Accepted |
 | [0003](0003-local-first-ai.md) | Use a Local-first AI Boundary | Accepted |
+| [0004](0004-deterministic-before-ai.md) | Deterministic Engines Before AI | Accepted |
 
 ## Naming
 
 Use four-digit sequence numbers and kebab-case titles:
 
 ```text
-0004-short-decision-title.md
+0005-short-decision-title.md
 ```
 
 ## Process
