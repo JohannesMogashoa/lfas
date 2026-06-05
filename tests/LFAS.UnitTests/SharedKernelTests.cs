@@ -9,7 +9,7 @@ public class SharedKernelTests
     {
         var correlationId = CorrelationId.New();
 
-        Assert.NotEqual(Guid.Empty, correlationId.Value);
+        correlationId.Value.Should().NotBe(Guid.Empty);
     }
 
     [Fact]
@@ -19,8 +19,8 @@ public class SharedKernelTests
 
         var correlationId = CorrelationId.From(guid.ToString());
 
-        Assert.Equal(guid, correlationId.Value);
-        Assert.Equal(guid.ToString(), correlationId.ToString());
+        correlationId.Value.Should().Be(guid);
+        correlationId.ToString().Should().Be(guid.ToString());
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public class SharedKernelTests
     {
         var correlationId = CorrelationId.From("not-a-guid");
 
-        Assert.NotEqual(Guid.Empty, correlationId.Value);
+        correlationId.Value.Should().NotBe(Guid.Empty);
     }
 
     [Fact]
@@ -37,7 +37,9 @@ public class SharedKernelTests
         var start = new DateTime(2026, 6, 3);
         var end = start.AddDays(-1);
 
-        Assert.Throws<ArgumentException>(() => new DateRange(start, end));
+        Action createRange = () => new DateRange(start, end);
+
+        createRange.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -45,11 +47,11 @@ public class SharedKernelTests
     {
         var range = DateRange.Monthly(2024, 2);
 
-        Assert.Equal(new DateTime(2024, 2, 1), range.Start);
-        Assert.Equal(new DateTime(2024, 2, 29), range.End);
-        Assert.Equal(29, range.TotalDays);
-        Assert.True(range.Includes(new DateTime(2024, 2, 29)));
-        Assert.Equal("2024-02-01 to 2024-02-29", range.ToString());
+        range.Start.Should().Be(new DateTime(2024, 2, 1));
+        range.End.Should().Be(new DateTime(2024, 2, 29));
+        range.TotalDays.Should().Be(29);
+        range.Includes(new DateTime(2024, 2, 29)).Should().BeTrue();
+        range.ToString().Should().Be("2024-02-01 to 2024-02-29");
     }
 
     [Fact]
@@ -58,7 +60,7 @@ public class SharedKernelTests
         var first = new DateRange(new DateTime(2026, 1, 1), new DateTime(2026, 1, 31));
         var second = new DateRange(new DateTime(2026, 1, 15), new DateTime(2026, 2, 15));
 
-        Assert.True(first.Overlaps(second));
+        first.Overlaps(second).Should().BeTrue();
     }
 
     [Fact]
@@ -66,8 +68,8 @@ public class SharedKernelTests
     {
         var money = new Money(10.12345m, "zar");
 
-        Assert.Equal(10.1234m, money.Amount);
-        Assert.Equal("ZAR", money.Currency);
+        money.Amount.Should().Be(10.1234m);
+        money.Currency.Should().Be("ZAR");
     }
 
     [Fact]
@@ -76,18 +78,20 @@ public class SharedKernelTests
         var first = Money.ZAR(100m);
         var second = Money.ZAR(25.50m);
 
-        Assert.Equal(Money.ZAR(125.50m), first + second);
-        Assert.Equal(Money.ZAR(74.50m), first - second);
-        Assert.Equal(Money.ZAR(200m), first * 2m);
+        (first + second).Should().Be(Money.ZAR(125.50m));
+        (first - second).Should().Be(Money.ZAR(74.50m));
+        (first * 2m).Should().Be(Money.ZAR(200m));
     }
 
     [Fact]
-    public void Money_throws_when_combining_different_currencies()
+    public void Money_DifferentCurrencies_ThrowsCurrencyMismatchException()
     {
         var zar = Money.ZAR(100m);
         var usd = new Money(100m, "USD");
 
-        Assert.Throws<CurrencyMismatchException>(() => zar + usd);
+        Action addDifferentCurrencies = () => _ = zar + usd;
+
+        addDifferentCurrencies.Should().Throw<CurrencyMismatchException>();
     }
 
     [Fact]
@@ -95,7 +99,7 @@ public class SharedKernelTests
     {
         var allocations = Money.ZAR(10m).Allocate(3);
 
-        Assert.Equal([Money.ZAR(3.34m), Money.ZAR(3.33m), Money.ZAR(3.33m)], allocations);
+        allocations.Should().Equal(Money.ZAR(3.34m), Money.ZAR(3.33m), Money.ZAR(3.33m));
     }
 
     [Fact]
@@ -104,10 +108,10 @@ public class SharedKernelTests
         var success = Result.Success();
         var failure = Result.Fail("invalid statement");
 
-        Assert.True(success.IsSuccessful);
-        Assert.Null(success.ErrorMessage);
-        Assert.False(failure.IsSuccessful);
-        Assert.Equal("invalid statement", failure.ErrorMessage);
+        success.IsSuccessful.Should().BeTrue();
+        success.ErrorMessage.Should().BeNull();
+        failure.IsSuccessful.Should().BeFalse();
+        failure.ErrorMessage.Should().Be("invalid statement");
     }
 
     [Fact]
@@ -116,11 +120,11 @@ public class SharedKernelTests
         var success = Result<int>.Success(42);
         var failure = Result<int>.Fail("missing value");
 
-        Assert.True(success.IsSuccessful);
-        Assert.Equal(42, success.Data);
-        Assert.False(failure.IsSuccessful);
-        Assert.Equal("missing value", failure.ErrorMessage);
-        Assert.Equal(default, failure.Data);
+        success.IsSuccessful.Should().BeTrue();
+        success.Data.Should().Be(42);
+        failure.IsSuccessful.Should().BeFalse();
+        failure.ErrorMessage.Should().Be("missing value");
+        failure.Data.Should().Be(default);
     }
 
     [Fact]
@@ -132,14 +136,14 @@ public class SharedKernelTests
         entity.Raise(domainEvent);
         entity.MarkModified(CorrelationId.New());
 
-        Assert.NotEqual(Guid.Empty, entity.Id);
-        Assert.True(entity.CreatedAt <= DateTime.UtcNow);
-        Assert.NotNull(entity.LastModifiedAt);
-        Assert.Collection(entity.DomainEvents, actual => Assert.Same(domainEvent, actual));
+        entity.Id.Should().NotBe(Guid.Empty);
+        entity.CreatedAt.Should().BeOnOrBefore(DateTime.UtcNow);
+        entity.LastModifiedAt.Should().NotBeNull();
+        entity.DomainEvents.Should().ContainSingle().Which.Should().BeSameAs(domainEvent);
 
         entity.ClearDomainEvents();
 
-        Assert.Empty(entity.DomainEvents);
+        entity.DomainEvents.Should().BeEmpty();
     }
 
     [Fact]
@@ -150,9 +154,9 @@ public class SharedKernelTests
         var second = new TestEntity(id);
         var third = new TestEntity(Guid.NewGuid());
 
-        Assert.Equal(first, second);
-        Assert.Equal(first.GetHashCode(), second.GetHashCode());
-        Assert.NotEqual(first, third);
+        first.Should().Be(second);
+        first.GetHashCode().Should().Be(second.GetHashCode());
+        first.Should().NotBe(third);
     }
 
     private sealed class TestEntity : BaseEntity

@@ -27,7 +27,7 @@ public class ArchitectureReferenceTests
 
         var actualReferences = ReadProjectReferences(projectPath);
 
-        Assert.Equal(expectedReferences.Order(), actualReferences.Order());
+        actualReferences.Should().BeEquivalentTo(expectedReferences);
     }
 
     [Fact]
@@ -35,10 +35,7 @@ public class ArchitectureReferenceTests
     {
         var references = ReadProjectReferences(RepositoryPaths.ProjectFile("LFAS.Domain"));
 
-        Assert.DoesNotContain("LFAS.Application", references);
-        Assert.DoesNotContain("LFAS.Infrastructure", references);
-        Assert.DoesNotContain("LFAS.Api", references);
-        Assert.DoesNotContain("LFAS.Web", references);
+        references.Should().NotIntersectWith(["LFAS.Application", "LFAS.Infrastructure", "LFAS.Api", "LFAS.Web"]);
     }
 
     [Fact]
@@ -46,9 +43,7 @@ public class ArchitectureReferenceTests
     {
         var references = ReadProjectReferences(RepositoryPaths.ProjectFile("LFAS.Application"));
 
-        Assert.DoesNotContain("LFAS.Infrastructure", references);
-        Assert.DoesNotContain("LFAS.Api", references);
-        Assert.DoesNotContain("LFAS.Web", references);
+        references.Should().NotIntersectWith(["LFAS.Infrastructure", "LFAS.Api", "LFAS.Web"]);
     }
 
     private static IReadOnlyCollection<string> ReadProjectReferences(string projectPath)

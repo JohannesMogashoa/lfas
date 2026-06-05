@@ -1,4 +1,4 @@
-﻿namespace LFAS.Application;
+namespace LFAS.Application;
 
 public class Class1
 {
