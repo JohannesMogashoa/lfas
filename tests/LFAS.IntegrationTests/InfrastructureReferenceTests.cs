@@ -86,6 +86,21 @@ public class InfrastructureReferenceTests
     }
 
     [Fact]
+    public void Api_uses_safe_global_exception_handling()
+    {
+        var serviceDefaults = File.ReadAllText(RepositoryPaths.File("src", "LFAS.ServiceDefaults", "Extensions.cs"));
+        var apiProgram = File.ReadAllText(RepositoryPaths.File("src", "LFAS.Api", "Program.cs"));
+
+        Assert.Contains("AddDefaultExceptionHandling", serviceDefaults);
+        Assert.Contains("AddProblemDetails", serviceDefaults);
+        Assert.Contains("AddExceptionHandler<SafeExceptionHandler>", serviceDefaults);
+        Assert.Contains("An unexpected error occurred.", serviceDefaults);
+        Assert.Contains("correlationId", serviceDefaults);
+        Assert.Contains("app.UseExceptionHandler();", apiProgram);
+        Assert.DoesNotContain("UseDeveloperExceptionPage", apiProgram);
+    }
+
+    [Fact]
     public void Service_defaults_map_standard_health_endpoint_trio()
     {
         var serviceDefaults = File.ReadAllText(RepositoryPaths.File("src", "LFAS.ServiceDefaults", "Extensions.cs"));
