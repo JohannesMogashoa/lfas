@@ -18,64 +18,75 @@ public static class FileValidator
     public static async Task<PdfValidationResult> ValidatePdfAsync(Stream stream)
     {
         var result = new PdfValidationResult();
+        long originalPosition = stream.CanSeek ? stream.Position : 0;
 
-        if (stream.Length < (PdfMagicBytes.Length + PdfFooterBytes.Length))
+        try
         {
-            result.Message = "File is empty or too small to be a valid PDF.";
-            return result;
-        }
+            if (!stream.CanSeek)
+            {
+                result.Message = "Stream must be seekable to validate PDF structure.";
+                return result;
+            }
 
-        // 1. Validate Header
-        if (stream.CanSeek) stream.Position = 0;
-        byte[] header = new byte[PdfMagicBytes.Length];
-        int headerBytesRead = await stream.ReadAsync(header, 0, header.Length);
+            if (stream.Length < (PdfMagicBytes.Length + PdfFooterBytes.Length))
+            {
+                result.Message = "File is empty or too small to be a valid PDF.";
+                return result;
+            }
 
-        if (headerBytesRead < header.Length || !MatchSequence(header, PdfMagicBytes))
-        {
-            result.Message = "Invalid PDF signature magic bytes.";
-            return result;
-        }
+            // 1. Validate Header
+            stream.Position = 0;
+            byte[] header = new byte[PdfMagicBytes.Length];
+            int headerBytesRead = await stream.ReadAsync(header, 0, header.Length);
 
-        // 2. Validate Footer
-        if (!stream.CanSeek)
-        {
-            result.Message = "Stream must be seekable to validate structure.";
-            return result;
-        }
+            if (headerBytesRead < header.Length || !MatchSequence(header, PdfMagicBytes))
+            {
+                result.Message = "Invalid PDF signature magic bytes.";
+                return result;
+            }
 
-        int footerWindowSize = (int)Math.Min(32, stream.Length);
-        byte[] footerBuffer = new byte[footerWindowSize];
-        stream.Seek(-footerWindowSize, SeekOrigin.End);
-        await stream.ReadAsync(footerBuffer, 0, footerBuffer.Length);
+            // 2. Validate Footer
+            int footerWindowSize = (int)Math.Min(32, stream.Length);
+            byte[] footerBuffer = new byte[footerWindowSize];
+            stream.Seek(-footerWindowSize, SeekOrigin.End);
+            await stream.ReadExactlyAsync(footerBuffer, 0, footerBuffer.Length);
 
-        if (!ContainsSequence(footerBuffer, PdfFooterBytes))
-        {
-            result.Message = "Truncated or broken PDF structure (missing %%EOF).";
-            return result;
-        }
+            if (!ContainsSequence(footerBuffer, PdfFooterBytes))
+            {
+                result.Message = "Truncated or broken PDF structure (missing %%EOF).";
+                return result;
+            }
 
-        // 3. Scan for Password Encryption
-        // We read the file in chunks to find the "/Encrypt" object identifier
-        stream.Position = 0;
-        byte[] buffer = new byte[4096];
-        int bytesRead;
+            // 3. Scan for Password Encryption
+            // We read the file in chunks to find the "/Encrypt" object identifier
+            stream.Position = 0;
+            byte[] buffer = new byte[4096];
+            int bytesRead;
 
-        while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-        {
-            // If the buffer window size is less than 4096, pass the exact size slice
-            byte[] activeBuffer = bytesRead == buffer.Length ? buffer : buffer.Take(bytesRead).ToArray();
+            while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                // If the buffer window size is less than 4096, pass the exact size slice
+                byte[] activeBuffer = bytesRead == buffer.Length ? buffer : buffer.Take(bytesRead).ToArray();
 
-            if (!ContainsSequence(activeBuffer, PdfEncryptMarker)) continue;
+                if (!ContainsSequence(activeBuffer, PdfEncryptMarker)) continue;
+
+                result.IsValid = true;
+                result.IsEncrypted = true;
+                result.Message = "Valid PDF structure detected, but the file is password encrypted.";
+                return result;
+            }
 
             result.IsValid = true;
-            result.IsEncrypted = true;
-            result.Message = "Valid PDF structure detected, but the file is password encrypted.";
+            result.Message = "PDF is valid and completely unencrypted.";
             return result;
         }
-
-        result.IsValid = true;
-        result.Message = "PDF is valid and completely unencrypted.";
-        return result;
+        finally
+        {
+            if (stream.CanSeek)
+            {
+                stream.Position = originalPosition;
+            }
+        }
     }
 
     private static bool MatchSequence(byte[] source, byte[] pattern)
