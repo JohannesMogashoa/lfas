@@ -1,3 +1,4 @@
+using LFAS.Application.Abstractions.Time;
 using LFAS.Application.Statements.Upload;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -7,7 +8,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddSingleton<IUploadStatementService, UploadStatementService>();
+        services.AddSingleton<IClock, SystemClock>();
+        services.AddScoped<IUploadStatementService, UploadStatementService>();
         return services;
     }
 }

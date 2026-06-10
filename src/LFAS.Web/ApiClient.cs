@@ -16,7 +16,7 @@ public class ApiClient(HttpClient httpClient)
         if (response.IsSuccessStatusCode)
             return Result<Guid>.Success(
                 await response.Content.ReadFromJsonAsync<Guid>(cancellationToken: cancellationToken));
-        
+
         ProblemDetails? error = await response.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken: cancellationToken);
 
         return error != null ? Result<Guid>.Fail(error.Detail ?? "Something went wrong") : Result<Guid>.Fail("Something went wrong");
