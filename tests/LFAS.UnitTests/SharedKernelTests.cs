@@ -134,7 +134,7 @@ public class SharedKernelTests
         var domainEvent = new TestDomainEvent(DateTime.UtcNow, CorrelationId.New());
 
         entity.Raise(domainEvent);
-        entity.MarkModified(CorrelationId.New());
+        entity.MarkModified(Guid.NewGuid(), CorrelationId.New());
 
         entity.Id.Should().NotBe(Guid.Empty);
         entity.CreatedAt.Should().BeOnOrBefore(DateTime.UtcNow);
