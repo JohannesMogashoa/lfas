@@ -17,6 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\LFAS.Application\LFAS.Application.csproj" />
+    <ProjectReference Include="..\..\src\LFAS.Domain\LFAS.Domain.csproj" />
     <ProjectReference Include="..\..\src\LFAS.SharedKernel\LFAS.SharedKernel.csproj" />
   </ItemGroup>
 
