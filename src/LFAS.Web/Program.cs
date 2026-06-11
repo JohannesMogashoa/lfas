@@ -1,6 +1,7 @@
+using LFAS.Web;
 using LFAS.Web.Components;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
@@ -8,7 +9,14 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-var app = builder.Build();
+builder.Services.AddOutputCache();
+
+builder.Services.AddHttpClient<ApiClient>(client =>
+{
+    client.BaseAddress = new("https+http://apiservice");
+});
+
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -22,7 +30,10 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
+app.UseOutputCache();
+
 app.MapStaticAssets();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

@@ -11,20 +11,20 @@ public sealed class HealthEndpointTests
     [Fact]
     public async Task HealthLive_ReturnsHealthyJson()
     {
-        var storageRoot = CreateTempDirectory();
+        string storageRoot = CreateTempDirectory();
 
         try
         {
-            using var factory = CreateFactory(storageRoot);
-            using var client = factory.CreateClient();
+            using WebApplicationFactory<Program> factory = CreateFactory(storageRoot);
+            using HttpClient client = factory.CreateClient();
 
-            using var response = await client.GetAsync("/health/live");
-            using var body = await ReadJsonAsync(response);
+            using HttpResponseMessage response = await client.GetAsync("/health/live");
+            using JsonDocument body = await ReadJsonAsync(response);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("Healthy", body.RootElement.GetProperty("status").GetString());
 
-            var entries = body.RootElement.GetProperty("entries");
+            JsonElement entries = body.RootElement.GetProperty("entries");
             Assert.Equal("Healthy", entries.GetProperty("self").GetProperty("status").GetString());
         }
         finally
@@ -36,20 +36,20 @@ public sealed class HealthEndpointTests
     [Fact]
     public async Task HealthReady_WhenDatabaseConnectionIsMissing_ReturnsUnavailableReadiness()
     {
-        var storageRoot = CreateTempDirectory();
+        string storageRoot = CreateTempDirectory();
 
         try
         {
-            using var factory = CreateFactory(storageRoot);
-            using var client = factory.CreateClient();
+            using WebApplicationFactory<Program> factory = CreateFactory(storageRoot);
+            using HttpClient client = factory.CreateClient();
 
-            using var response = await client.GetAsync("/health/ready");
-            using var body = await ReadJsonAsync(response);
+            using HttpResponseMessage response = await client.GetAsync("/health/ready");
+            using JsonDocument body = await ReadJsonAsync(response);
 
             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
             Assert.Equal("Unhealthy", body.RootElement.GetProperty("status").GetString());
 
-            var entries = body.RootElement.GetProperty("entries");
+            JsonElement entries = body.RootElement.GetProperty("entries");
             Assert.Equal("Unhealthy", entries.GetProperty("database").GetProperty("status").GetString());
             Assert.Equal("Healthy", entries.GetProperty("storage").GetProperty("status").GetString());
         }
@@ -62,17 +62,17 @@ public sealed class HealthEndpointTests
     [Fact]
     public async Task Health_WhenReadinessFails_ReturnsSanitizedAggregateJson()
     {
-        var storageRoot = CreateTempDirectory();
-        var blockedStoragePath = Path.Combine(storageRoot, "storage-file");
+        string storageRoot = CreateTempDirectory();
+        string blockedStoragePath = Path.Combine(storageRoot, "storage-file");
         await File.WriteAllTextAsync(blockedStoragePath, "not a directory");
 
         try
         {
-            using var factory = CreateFactory(blockedStoragePath);
-            using var client = factory.CreateClient();
+            using WebApplicationFactory<Program> factory = CreateFactory(blockedStoragePath);
+            using HttpClient client = factory.CreateClient();
 
-            using var response = await client.GetAsync("/health");
-            var responseBody = await response.Content.ReadAsStringAsync();
+            using HttpResponseMessage response = await client.GetAsync("/health");
+            string responseBody = await response.Content.ReadAsStringAsync();
             using var body = JsonDocument.Parse(responseBody);
 
             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
@@ -110,13 +110,13 @@ public sealed class HealthEndpointTests
 
     private static async Task<JsonDocument> ReadJsonAsync(HttpResponseMessage response)
     {
-        var responseBody = await response.Content.ReadAsStringAsync();
+        string responseBody = await response.Content.ReadAsStringAsync();
         return JsonDocument.Parse(responseBody);
     }
 
     private static string CreateTempDirectory()
     {
-        var path = Path.Combine(Path.GetTempPath(), $"lfas-health-{Guid.NewGuid():N}");
+        string path = Path.Combine(Path.GetTempPath(), $"lfas-health-{Guid.NewGuid():N}");
         Directory.CreateDirectory(path);
 
         return path;

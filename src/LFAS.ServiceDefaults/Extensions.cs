@@ -45,7 +45,7 @@ public static class Extensions
 
     public static TBuilder ConfigureStructuredLogging<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        var logFilePath = builder.Configuration["LFAS:Logging:FilePath"] ?? "logs/lfas-.ndjson";
+        string logFilePath = builder.Configuration["LFAS:Logging:FilePath"] ?? "logs/lfas-.ndjson";
 
         builder.Logging.ClearProviders();
         builder.Services.AddHttpContextAccessor();
@@ -93,7 +93,7 @@ public static class Extensions
 
     private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
+        bool useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
 
         if (useOtlpExporter)
         {
@@ -118,7 +118,7 @@ public static class Extensions
         {
             options.CustomizeProblemDetails = context =>
             {
-                var correlationId = ResolveCorrelationId(context.HttpContext);
+                string correlationId = ResolveCorrelationId(context.HttpContext);
 
                 context.ProblemDetails.Extensions["correlationId"] = correlationId;
                 context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
@@ -176,16 +176,16 @@ public static class Extensions
 
     internal static string ResolveCorrelationId(HttpContext context)
     {
-        var responseHeaderValue = context.Response.Headers[CorrelationIdLoggingMiddleware.HeaderName].FirstOrDefault();
+        string? responseHeaderValue = context.Response.Headers[CorrelationIdLoggingMiddleware.HeaderName].FirstOrDefault();
 
-        if (Guid.TryParse(responseHeaderValue, out var parsedResponseHeader))
+        if (Guid.TryParse(responseHeaderValue, out Guid parsedResponseHeader))
         {
             return parsedResponseHeader.ToString();
         }
 
-        var requestHeaderValue = context.Request.Headers[CorrelationIdLoggingMiddleware.HeaderName].FirstOrDefault();
+        string? requestHeaderValue = context.Request.Headers[CorrelationIdLoggingMiddleware.HeaderName].FirstOrDefault();
 
-        if (Guid.TryParse(requestHeaderValue, out var parsedRequestHeader))
+        if (Guid.TryParse(requestHeaderValue, out Guid parsedRequestHeader))
         {
             return parsedRequestHeader.ToString();
         }
@@ -201,12 +201,12 @@ internal sealed class SafeExceptionHandler(IProblemDetailsService problemDetails
         Exception exception,
         CancellationToken cancellationToken)
     {
-        var correlationId = Extensions.ResolveCorrelationId(httpContext);
+        string correlationId = Extensions.ResolveCorrelationId(httpContext);
 
         httpContext.Response.Headers[CorrelationIdLoggingMiddleware.HeaderName] = correlationId;
 
-        var safeMethod = SanitizeForLog(httpContext.Request.Method);
-        var safePath = SanitizeForLog(httpContext.Request.Path.ToString());
+        string safeMethod = SanitizeForLog(httpContext.Request.Method);
+        string safePath = SanitizeForLog(httpContext.Request.Path.ToString());
 
         logger.LogError(
             "Unhandled exception of type {ExceptionType} for request {Method} {Path}. CorrelationId: {CorrelationId}",
@@ -260,7 +260,7 @@ internal sealed class CorrelationIdLoggingMiddleware(RequestDelegate next)
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var correlationId = ResolveOrCreateCorrelationId(context);
+        string correlationId = ResolveOrCreateCorrelationId(context);
 
         context.Response.Headers[HeaderName] = correlationId;
 
@@ -272,9 +272,9 @@ internal sealed class CorrelationIdLoggingMiddleware(RequestDelegate next)
 
     private static string ResolveOrCreateCorrelationId(HttpContext context)
     {
-        var headerValue = context.Request.Headers[HeaderName].FirstOrDefault();
+        string? headerValue = context.Request.Headers[HeaderName].FirstOrDefault();
 
-        return Guid.TryParse(headerValue, out var parsed)
+        return Guid.TryParse(headerValue, out Guid parsed)
             ? parsed.ToString()
             : Guid.NewGuid().ToString();
     }

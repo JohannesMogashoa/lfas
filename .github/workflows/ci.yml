@@ -57,6 +57,9 @@ jobs:
       - name: Restore
         run: dotnet restore LFAS.slnx
 
+      - name: Clean
+        run: dotnet clean LFAS.slnx
+
       - name: Build
         run: dotnet build LFAS.slnx --configuration Release --no-restore -warnaserror
 
