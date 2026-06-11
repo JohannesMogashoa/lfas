@@ -11,19 +11,19 @@ public sealed class ExceptionHandlingTests
     [Fact]
     public async Task UnhandledException_ReturnsSafeProblemDetailsWithCorrelationId()
     {
-        var storageRoot = CreateTempDirectory();
-        var correlationId = Guid.NewGuid().ToString();
+        string storageRoot = CreateTempDirectory();
+        string correlationId = Guid.NewGuid().ToString();
 
         try
         {
-            using var factory = CreateFactory(storageRoot);
-            using var client = factory.CreateClient();
+            using WebApplicationFactory<Program> factory = CreateFactory(storageRoot);
+            using HttpClient client = factory.CreateClient();
 
             using var request = new HttpRequestMessage(HttpMethod.Get, "/_testing/unhandled-exception");
             request.Headers.Add("X-Correlation-ID", correlationId);
 
-            using var response = await client.SendAsync(request);
-            var responseBody = await response.Content.ReadAsStringAsync();
+            using HttpResponseMessage response = await client.SendAsync(request);
+            string responseBody = await response.Content.ReadAsStringAsync();
             using var body = JsonDocument.Parse(responseBody);
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -47,20 +47,20 @@ public sealed class ExceptionHandlingTests
     [Fact]
     public async Task UnhandledException_WhenCorrelationHeaderIsInvalid_GeneratesResponseCorrelationId()
     {
-        var storageRoot = CreateTempDirectory();
+        string storageRoot = CreateTempDirectory();
 
         try
         {
-            using var factory = CreateFactory(storageRoot);
-            using var client = factory.CreateClient();
+            using WebApplicationFactory<Program> factory = CreateFactory(storageRoot);
+            using HttpClient client = factory.CreateClient();
 
             using var request = new HttpRequestMessage(HttpMethod.Get, "/_testing/unhandled-exception");
             request.Headers.Add("X-Correlation-ID", "not-a-guid");
 
-            using var response = await client.SendAsync(request);
+            using HttpResponseMessage response = await client.SendAsync(request);
             using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
 
-            var responseCorrelationId = response.Headers.GetValues("X-Correlation-ID").Single();
+            string responseCorrelationId = response.Headers.GetValues("X-Correlation-ID").Single();
 
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.True(Guid.TryParse(responseCorrelationId, out _));
@@ -92,7 +92,7 @@ public sealed class ExceptionHandlingTests
 
     private static string CreateTempDirectory()
     {
-        var path = Path.Combine(Path.GetTempPath(), $"lfas-exception-{Guid.NewGuid():N}");
+        string path = Path.Combine(Path.GetTempPath(), $"lfas-exception-{Guid.NewGuid():N}");
         Directory.CreateDirectory(path);
 
         return path;

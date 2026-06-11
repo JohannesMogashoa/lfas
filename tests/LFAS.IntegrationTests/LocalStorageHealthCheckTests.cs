@@ -8,13 +8,13 @@ public sealed class LocalStorageHealthCheckTests
     [Fact]
     public async Task CheckHealthAsync_WhenStoragePathIsWritable_ReturnsHealthy()
     {
-        var contentRoot = CreateTempDirectory();
+        string contentRoot = CreateTempDirectory();
 
         try
         {
             var check = new LocalStorageHealthCheck(new LocalStorageHealthCheckOptions("storage", contentRoot));
 
-            var result = await check.CheckHealthAsync(new HealthCheckContext());
+            HealthCheckResult result = await check.CheckHealthAsync(new HealthCheckContext());
 
             Assert.Equal(HealthStatus.Healthy, result.Status);
             Assert.Equal("Storage path is writable.", result.Description);
@@ -29,15 +29,15 @@ public sealed class LocalStorageHealthCheckTests
     [Fact]
     public async Task CheckHealthAsync_WhenStoragePathCannotBeCreated_ReturnsSanitizedUnhealthyResult()
     {
-        var contentRoot = CreateTempDirectory();
-        var blockedPath = Path.Combine(contentRoot, "storage");
+        string contentRoot = CreateTempDirectory();
+        string blockedPath = Path.Combine(contentRoot, "storage");
         await File.WriteAllTextAsync(blockedPath, "not a directory");
 
         try
         {
             var check = new LocalStorageHealthCheck(new LocalStorageHealthCheckOptions(blockedPath, contentRoot));
 
-            var result = await check.CheckHealthAsync(new HealthCheckContext());
+            HealthCheckResult result = await check.CheckHealthAsync(new HealthCheckContext());
 
             Assert.Equal(HealthStatus.Unhealthy, result.Status);
             Assert.Equal("Storage path is unavailable.", result.Description);
@@ -51,7 +51,7 @@ public sealed class LocalStorageHealthCheckTests
 
     private static string CreateTempDirectory()
     {
-        var path = Path.Combine(Path.GetTempPath(), $"lfas-storage-health-{Guid.NewGuid():N}");
+        string path = Path.Combine(Path.GetTempPath(), $"lfas-storage-health-{Guid.NewGuid():N}");
         Directory.CreateDirectory(path);
 
         return path;

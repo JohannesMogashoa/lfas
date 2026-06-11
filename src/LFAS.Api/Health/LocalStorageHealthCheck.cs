@@ -13,8 +13,8 @@ public sealed class LocalStorageHealthCheck(LocalStorageHealthCheckOptions optio
             return HealthCheckResult.Unhealthy("Storage root is not configured.");
         }
 
-        var rootPath = ResolveRootPath(options.RootPath, options.ContentRootPath);
-        var probePath = Path.Combine(rootPath, $".lfas-health-{Guid.NewGuid():N}.tmp");
+        string rootPath = ResolveRootPath(options.RootPath, options.ContentRootPath);
+        string probePath = Path.Combine(rootPath, $".lfas-health-{Guid.NewGuid():N}.tmp");
 
         try
         {
