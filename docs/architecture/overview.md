@@ -44,6 +44,14 @@ AI → Application
 - AI
 - Commercial platform
 
+## Upload Audit Trail
+
+Accepted statement uploads emit a single audit event that links the upload,
+job, and correlation identifiers without storing raw statement content.
+Validation failures are intentionally excluded from this trail. See
+[upload-audit-trail.md](./upload-audit-trail.md) for the field contract and
+privacy rules.
+
 ## Health Endpoints
 
 The API exposes operational health endpoints through ASP.NET Core health checks:

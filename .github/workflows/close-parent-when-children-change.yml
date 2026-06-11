@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Close/reopen parent when sub-issues change
-        uses: actions/github-script@v6
+        uses: actions/github-script@v9
         with:
           script: |
             const issue = context.payload.issue;

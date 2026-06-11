@@ -16,16 +16,16 @@ public class ArchitectureReferenceTests
         { "LFAS.ServiceDefaults", [] },
         { "LFAS.SharedKernel", [] },
         { "LFAS.StatementParser", ["LFAS.Application"] },
-        { "LFAS.Web", ["LFAS.ServiceDefaults"] }
+        { "LFAS.Web", ["LFAS.ServiceDefaults", "LFAS.SharedKernel"] },
     };
 
     [Theory]
     [MemberData(nameof(ProjectReferences))]
     public void Projects_only_reference_allowed_dependencies(string projectName, string[] expectedReferences)
     {
-        var projectPath = RepositoryPaths.ProjectFile(projectName);
+        string projectPath = RepositoryPaths.ProjectFile(projectName);
 
-        var actualReferences = ReadProjectReferences(projectPath);
+        IReadOnlyCollection<string> actualReferences = ReadProjectReferences(projectPath);
 
         actualReferences.Should().BeEquivalentTo(expectedReferences);
     }
@@ -33,7 +33,7 @@ public class ArchitectureReferenceTests
     [Fact]
     public void Domain_model_does_not_reference_outer_layers()
     {
-        var references = ReadProjectReferences(RepositoryPaths.ProjectFile("LFAS.Domain"));
+        IReadOnlyCollection<string> references = ReadProjectReferences(RepositoryPaths.ProjectFile("LFAS.Domain"));
 
         references.Should().NotIntersectWith(["LFAS.Application", "LFAS.Infrastructure", "LFAS.Api", "LFAS.Web"]);
     }
@@ -41,7 +41,7 @@ public class ArchitectureReferenceTests
     [Fact]
     public void Application_layer_does_not_reference_infrastructure_or_presentation()
     {
-        var references = ReadProjectReferences(RepositoryPaths.ProjectFile("LFAS.Application"));
+        IReadOnlyCollection<string> references = ReadProjectReferences(RepositoryPaths.ProjectFile("LFAS.Application"));
 
         references.Should().NotIntersectWith(["LFAS.Infrastructure", "LFAS.Api", "LFAS.Web"]);
     }
@@ -61,7 +61,7 @@ public class ArchitectureReferenceTests
 
     private static string ProjectNameFromReference(string include)
     {
-        var normalizedPath = include.Replace('\\', Path.DirectorySeparatorChar);
+        string normalizedPath = include.Replace('\\', Path.DirectorySeparatorChar);
 
         return Path.GetFileNameWithoutExtension(normalizedPath);
     }

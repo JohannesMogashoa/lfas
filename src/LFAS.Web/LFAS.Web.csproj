@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LFAS.ServiceDefaults\LFAS.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\LFAS.SharedKernel\LFAS.SharedKernel.csproj" />
   </ItemGroup>
 
 </Project>
