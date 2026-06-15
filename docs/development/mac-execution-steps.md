@@ -3,7 +3,7 @@
 From your LFAS repository root:
 
 ```bash
-# 1. Confirm the repo has docs/, planning/, scripts/, src/, and tests/
+# 1. Confirm the repo has apps/, packages/, docs/, planning/, and scripts/
 
 # 2. Confirm scripts are executable
 find scripts -name "*.sh" -exec chmod +x {} +
@@ -17,10 +17,12 @@ docker compose up -d postgres
 docker compose ps
 docker compose down -v
 
-# 5. Validate .NET once solution exists
-dotnet restore
-dotnet build
-dotnet test
+# 5. Validate Node.js workspace
+pnpm install
+pnpm lint
+pnpm typecheck
+pnpm build
+pnpm test
 
 # 6. Commit
 git add .

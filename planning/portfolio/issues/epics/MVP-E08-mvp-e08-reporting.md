@@ -24,6 +24,24 @@ This epic contributes to the LFAS portfolio roadmap by enabling the product to m
 - [ ] Financial Summary Reporting
 - [ ] PDF and Excel Exports
 
+## Monorepo Enrichment
+
+### Delivery Shape
+
+- Anchor this epic in future `packages/reporting` plus `apps/web` report route handlers.
+- Sequence child features so deterministic local analysis comes before provider, AI, or commercial expansion.
+- Keep GitHub issue content aligned with `planning/portfolio/portfolio.json` and the Markdown body files.
+
+### Validation Expectations
+
+- Run `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` before marking done.
+- Verify child features are sequenced around deterministic engines before AI or commercial expansion.
+
+### Privacy Boundary
+
+- Never commit real bank statements, account numbers, card numbers, IDs, emails, phone numbers, or raw statement text.
+- Exports must use sanitized report models and avoid unnecessary transaction-level PII.
+
 ## Labels
 
 release:mvp, type:epic, area:reporting, priority:high

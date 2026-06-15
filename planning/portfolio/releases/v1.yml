@@ -194,7 +194,7 @@ items:
     body_file: portfolio/issues/stories/V1-E04-F01-S01-v1-e04-f01-s01-create-ollama-client.md
   - key: V1-E04-F01-S02
     type: story
-    title: "[V1-E04-F01-S02] Integrate Semantic Kernel abstraction"
+    title: "[V1-E04-F01-S02] Create local AI orchestration abstraction"
     milestone: V1
     labels: ["release:v1", "type:story", "area:ai", "priority:medium"]
     parent: V1-E04-F01

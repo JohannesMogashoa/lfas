@@ -1,0 +1,4 @@
+{
+  "extends": "@lfas/typescript-config/base.json"
+}
+

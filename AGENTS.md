@@ -1,13 +1,23 @@
 # AGENTS.md
 
+<!-- BEGIN:nextjs-agent-rules -->
+## This is NOT the Next.js you know
+
+This version has breaking changes. APIs, conventions, and file structure may
+differ from training data. Read the relevant guide in
+`node_modules/next/dist/docs/` before writing Next.js code. Heed deprecation
+notices.
+<!-- END:nextjs-agent-rules -->
+
 ## Purpose
 
-This repository contains a local-first financial analysis system built with .NET and
-Clean Architecture principles. All automated agents, coding assistants, and
-AI-generated contributions must follow the rules in this document.
+This repository contains a local-first financial analysis system built as a
+Node.js, TypeScript, Next.js monorepo with PNPM workspaces and Turborepo. All
+automated agents, coding assistants, and AI-generated contributions must follow
+the rules in this document.
 
-The primary goal of the system is to deliver business capabilities, not disconnected
-technical components. Work must align to business outcomes such as:
+The primary goal of the system is to deliver business capabilities, not
+disconnected technical components. Work must align to outcomes such as:
 
 - user uploads statement
 - system extracts transactions
@@ -15,45 +25,51 @@ technical components. Work must align to business outcomes such as:
 - system calculates financial position
 - system generates recommendations
 
-Do not optimize for novelty. Optimize for correctness, maintainability, traceability,
-privacy, and testability.
+Do not optimize for novelty. Optimize for correctness, maintainability,
+traceability, privacy, and testability.
 
 ---
 
 ## Core Engineering Principles
 
-1. Follow Clean Architecture strictly.
-2. Prefer business capability slices over technical-layer-first design.
-3. Keep the Shared Kernel small, stable, and dependency-free.
-4. Domain logic must remain pure and deterministic.
-5. Infrastructure is replaceable.
-6. Code must be production-quality, not illustrative unless explicitly requested.
-7. All non-trivial behavior must be covered by tests.
-8. Financial calculations must be precise and explicit.
-9. Privacy and PII boundaries are mandatory.
-10. Generated output must be minimal, clear, and consistent with repo conventions.
+1. Organize work by business capability slices.
+2. Keep financial domain logic framework-independent and deterministic.
+3. Keep Next.js routes, pages, and server actions thin.
+4. Use PNPM workspace packages for reusable product capabilities.
+5. Keep shared packages small, stable, and dependency-conscious.
+6. Infrastructure adapters must be replaceable.
+7. Code must be production-quality, not illustrative unless explicitly requested.
+8. All non-trivial behavior must be covered by tests.
+9. Financial calculations must be precise and explicit.
+10. Privacy and PII boundaries are mandatory.
 
 ---
 
-## Solution Structure
+## Monorepo Structure
 
 Expected top-level structure:
 
-- `src/FinanceAI.SharedKernel`
-- `src/FinanceAI.Domain`
-- `src/FinanceAI.Application`
-- `src/FinanceAI.Infrastructure`
-- `src/FinanceAI.API`
-- `src/FinanceAI.StatementParser`
-- `src/FinanceAI.AI`
-- `src/FinanceAI.Reporting`
-- `tests/FinanceAI.UnitTests`
-- `tests/FinanceAI.IntegrationTests`
+- `apps/web`
+- `packages/ui`
+- `packages/bank-statement-parser`
+- `packages/eslint-config`
+- `packages/typescript-config`
 - `docs`
+- `planning`
 - `scripts`
 
-Agents must place code in the correct project and must not introduce unnecessary new
-projects.
+Future packages are allowed only when they represent a stable shared capability,
+for example:
+
+- `packages/domain`
+- `packages/application`
+- `packages/storage`
+- `packages/reporting`
+- `packages/ai`
+- `packages/test-utils`
+
+Agents must place code in the smallest appropriate workspace and must not create
+new packages merely to mirror technical layers.
 
 ---
 
@@ -61,145 +77,94 @@ projects.
 
 ### Dependency Direction
 
-Dependencies must flow inward only.
+Dependencies must point from applications toward reusable packages:
 
-- `SharedKernel`: depends on nothing in this repository
-- `Domain`: may depend on `SharedKernel`
-- `Application`: may depend on `Domain` and `SharedKernel`
-- `Infrastructure`: may depend on `Application`, `Domain`, and `SharedKernel`
-- `API`: may depend on `Application`, `Infrastructure`, and `SharedKernel`
-- `StatementParser`: may depend on `Application`, `Domain`, and `SharedKernel`
-- `AI`: may depend on `Application` and `SharedKernel`
-- `Reporting`: may depend on `Application` and `SharedKernel`
+- `apps/web` may depend on product packages and `packages/ui`.
+- `packages/ui` must not depend on `apps/web`.
+- `packages/bank-statement-parser` must not depend on Next.js or React.
+- Domain and financial packages must not depend on UI, route handlers, storage
+  adapters, logging implementations, or external AI clients.
+- Infrastructure adapters may depend on domain/application contracts, but those
+  contracts must not depend on infrastructure adapters.
+- Shared configuration packages may be consumed by all workspaces.
 
-Do not introduce reverse dependencies.
+Do not introduce circular workspace dependencies.
+
+### Next.js Rules
+
+- Use the App Router in `apps/web/app`.
+- Prefer Server Components by default.
+- Add `"use client"` only for interactive browser state, effects, or browser-only
+  APIs.
+- Keep route handlers and server actions thin; delegate business rules to
+  workspace packages.
+- Validate all request and form inputs at the boundary.
+- Do not expose internal domain objects directly from API responses.
+- Do not read raw statement data in Client Components.
+
+### Package Rules
+
+- Put reusable UI primitives in `packages/ui`.
+- Put statement parsing, normalization, and deterministic extraction rules in
+  `packages/bank-statement-parser` unless a narrower package already exists.
+- Put shared ESLint rules in `packages/eslint-config`.
+- Put shared TypeScript configs in `packages/typescript-config`.
+- Keep package entry points explicit and stable.
+- Use workspace protocol dependencies where appropriate.
 
 ### Domain Rules
 
 Domain code must not depend on:
 
-- ASP.NET Core
-- Entity Framework Core
-- logging frameworks
-- MediatR directly unless already approved in the architecture
+- Next.js
+- React
+- browser APIs
 - file system APIs
 - HTTP clients
-- database concerns
-- serializer-specific attributes unless explicitly approved
+- database clients or ORMs
+- logging frameworks
+- serializer-specific behavior unless explicitly approved
 
-Domain entities and value objects must model business rules, invariants, and behavior.
-
-### Application Rules
-
-Application contains:
-
-- use cases
-- commands and queries
-- interfaces/ports
-- validation orchestration
-- DTOs only where appropriate
-- domain event handlers if that is the chosen pattern
-
-Application must not contain infrastructure implementation details.
-
-### Infrastructure Rules
-
-Infrastructure contains implementations for:
-
-- persistence
-- file storage
-- OCR/PDF libraries
-- external/local AI integrations
-- reporting engine integrations
-- background processing adapters
-
-Infrastructure must implement application contracts, not redefine them.
+Domain entities and value objects must model business rules, invariants, and
+behavior.
 
 ---
 
-## Shared Kernel Rules
-
-The Shared Kernel is reserved for highly stable, cross-cutting primitives only.
-
-Allowed examples:
-
-- `Money`
-- `DateRange`
-- `CorrelationId`
-- `BaseEntity`
-- domain event abstractions
-- guard clauses
-- result/error primitives if approved
-
-Do not place feature-specific logic in the Shared Kernel.
-
-### Shared Kernel Constraints
-
-- no dependency on other solution projects
-- no dependency on web frameworks
-- no dependency on persistence frameworks
-- no dependency on UI concerns
-- must remain small and stable
-
----
-
-## C# Coding Standards
+## TypeScript Coding Standards
 
 ### Language and Runtime
 
-- Use the current approved .NET SDK for this repo.
-- Use nullable reference types.
-- Treat warnings as errors where practical.
-- Use implicit usings only if already enabled consistently across the solution.
+- Use the current approved Node.js and PNPM versions for this repo.
+- Use TypeScript for production code.
+- Keep `strict` TypeScript enabled.
+- Prefer ESM unless an existing tool requires otherwise.
+- Treat type errors and lint errors as build blockers.
 
 ### Type Design
 
-- Prefer `record struct` or `readonly record struct` for small immutable value objects.
-- Prefer `sealed` classes when inheritance is not intended.
-- Prefer explicit constructors that enforce invariants.
-- Avoid primitive obsession. Use value objects where business meaning matters.
-- Avoid anemic domain models when behavior belongs to the domain.
+- Prefer explicit domain types over naked primitives where business meaning
+  matters.
+- Prefer immutable values and readonly object shapes by default.
+- Use discriminated unions for state machines and result variants.
+- Avoid `any`; use `unknown` at boundaries and narrow intentionally.
+- Keep Zod or equivalent schemas at system boundaries, not buried inside pure
+  domain logic unless schema validation is the boundary contract.
 
 ### Naming
 
 - Use clear, descriptive names.
-- Use `PascalCase` for public members and types.
-- Use `_camelCase` for private readonly fields.
-- Interfaces must start with `I`.
+- Use `PascalCase` for types and React components.
+- Use `camelCase` for variables, functions, and object members.
+- Prefix interfaces with `I` only when that convention already exists locally.
 - Avoid abbreviations unless standard and unambiguous.
-
-### Immutability
-
-- Prefer immutability by default.
-- Use `init` setters only when appropriate and safe.
-- Avoid public mutable collections.
-- Expose read-only collections from aggregates and entities.
-
-### Exceptions
-
-- Throw exceptions only for truly exceptional situations.
-- Use domain-specific exceptions where clarity matters.
-- Do not use exceptions for normal control flow.
-- Validate invariants at construction and mutation boundaries.
 
 ### Async
 
 - Use async/await correctly.
-- Do not block on async code.
-- Pass `CancellationToken` in all I/O and application workflows where appropriate.
-- Suffix asynchronous methods with `Async`.
-
-### Collections and LINQ
-
-- Prefer clarity over cleverness.
-- Avoid multiple enumeration of `IEnumerable`.
-- Materialize collections intentionally.
-- Avoid complex nested LINQ where imperative code is clearer.
-
-### Pattern Matching
-
-- Prefer modern C# pattern matching when it improves readability.
-- Do not use advanced language features purely for cleverness.
+- Do not block the event loop with heavy parsing or OCR work inside request paths.
+- Pass `AbortSignal` where supported for I/O and long-running workflows.
+- Suffix asynchronous functions with `Async` only when it improves clarity or
+  matches local convention.
 
 ### Comments
 
@@ -215,73 +180,39 @@ This is a financial system. Accuracy is mandatory.
 
 ### Money
 
-- Never use `double` or `float` for monetary values.
-- Use `decimal` within the `Money` value object.
+- Never use binary floating point arithmetic for monetary calculations.
+- Use integer minor units, a decimal library, or a dedicated `Money` value object.
 - Never pass naked monetary amounts where `Money` should be used.
 - Do not mix currencies silently.
 - Enforce currency matching in arithmetic operations.
 
 ### Dates and Periods
 
-- Use `DateOnly` where time-of-day is irrelevant and supported by the architecture.
-- Use `DateTimeOffset` for timestamps crossing system boundaries.
-- Use `DateRange` for periods instead of separate start/end pairs.
-- Be explicit about timezone and UTC behavior.
+- Use date-only representations where time-of-day is irrelevant.
+- Use explicit UTC timestamps for events crossing system boundaries.
+- Use a `DateRange` value object for periods instead of unrelated start/end
+  values.
+- Be explicit about timezone behavior.
 
 ### Rounding
 
 - Be explicit about rounding rules.
-- Do not rely on implicit framework defaults for financial rounding in business logic.
+- Do not rely on implicit JavaScript or database defaults for financial rounding.
 - Document rounding intent in code when non-obvious.
 
 ---
 
-## Domain Modeling Rules
+## API and Persistence Rules
 
-### Entities
-
-- Entities must have identity.
-- Entities must protect invariants.
-- Entities should expose behavior, not just data.
-- Inheritance from `BaseEntity` must be intentional and minimal.
-
-### Value Objects
-
-- Value objects must be immutable.
-- Value objects must validate themselves on creation.
-- Value objects should encapsulate domain meaning and related operations.
-
-### Domain Events
-
-- Use domain events for important business occurrences.
-- Domain events should be named in past tense, e.g. `StatementValidated`.
-- Domain events should represent facts, not commands.
-- Do not publish meaningless or overly granular events.
-
----
-
-## API Rules
-
-- Controllers/endpoints must remain thin.
-- No business logic in controllers.
+- Next.js route handlers must remain thin.
+- No business logic in route handlers or React components.
 - Validate inputs at the boundary.
-- Return appropriate HTTP status codes.
-- Use problem details or a consistent error contract.
-- Include correlation ID propagation in request/response behavior where implemented.
-
-Do not expose internal domain entities directly from API endpoints unless explicitly
-approved. Prefer response contracts.
-
----
-
-## Persistence Rules
-
-- Keep persistence concerns out of the domain model where possible.
-- Entity Framework configuration belongs in Infrastructure.
-- Prefer explicit entity type configuration over giant `OnModelCreating` methods.
-- Be explicit about precision for decimal columns.
+- Return appropriate HTTP status codes and consistent error payloads.
+- Include correlation ID propagation where implemented.
+- Keep persistence concerns out of the domain model.
+- Be explicit about decimal precision and storage format.
 - Always define indexes and constraints intentionally.
-- Use migrations responsibly; generated migrations must be reviewed.
+- Review generated migrations before committing them.
 
 ---
 
@@ -294,22 +225,23 @@ All non-trivial logic requires tests.
 Unit tests must cover:
 
 - value object invariants
-- domain entity behavior
+- domain behavior
 - financial calculations
 - parsing rules
 - validation rules
-- domain event emission
+- state transitions
 - edge cases and boundary conditions
 
-### Integration Tests
+### Integration and E2E Tests
 
-Integration tests must cover:
+Integration and E2E tests must cover:
 
 - database persistence mappings
-- API request/response behavior
+- route handler request/response behavior
 - file upload workflows
 - parser integration
 - end-to-end statement processing paths where feasible
+- critical user workflows in `apps/web`
 
 ### Test Quality
 
@@ -326,8 +258,8 @@ Integration tests must cover:
 
 - Use structured logging.
 - Include correlation ID in relevant logs.
-- Never log raw sensitive financial or PII data unless explicitly approved for a secure
-  local-only scenario and clearly justified.
+- Never log raw sensitive financial or PII data unless explicitly approved for a
+  secure local-only scenario and clearly justified.
 - Log intent and outcomes, not noise.
 
 ---
@@ -339,7 +271,8 @@ This system processes highly sensitive financial data.
 ### Mandatory Rules
 
 - Do not send raw statement data to external services.
-- Do not expose PII in logs.
+- Do not expose PII in logs, client components, browser storage, analytics, or
+  telemetry.
 - Do not store secrets in source control.
 - Use environment variables or approved local secret mechanisms.
 - Redact sensitive data before AI prompt construction.
@@ -356,11 +289,13 @@ This system processes highly sensitive financial data.
 
 ## Dependency Management Rules
 
+- Use PNPM as the only package manager.
 - Prefer the smallest viable dependency set.
 - Do not add new packages without clear justification.
 - Prefer well-maintained, widely used packages.
 - Avoid introducing overlapping libraries for the same purpose.
 - If adding a package, update documentation and explain why it is needed.
+- Commit `pnpm-lock.yaml` when dependency changes are made.
 
 ---
 
@@ -384,19 +319,25 @@ Use:
 - Line length should follow repo markdownlint configuration
 - Blank lines around headings/lists/code blocks as required by lint rules
 
-Agents modifying Markdown must ensure the result passes linting before completion.
+Agents modifying Markdown must ensure the result passes linting before
+completion.
 
 ---
 
 ## Formatting and Linting Rules
 
-Before considering work complete, agents must run relevant formatting and linting tools.
+Before considering work complete, agents must run relevant formatting and
+linting tools.
 
-### .NET
+### Node.js / TypeScript
 
 Run:
 
 ```bash
-dotnet format
-dotnet build
-dotnet test
+pnpm install --frozen-lockfile
+pnpm format
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```

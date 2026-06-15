@@ -25,6 +25,24 @@ This epic contributes to the LFAS portfolio roadmap by enabling the product to m
 - [ ] OCR Extraction
 - [ ] Bank and Statement Detection
 
+## Monorepo Enrichment
+
+### Delivery Shape
+
+- Anchor this epic in `packages/bank-statement-parser` and deterministic parser fixtures.
+- Sequence child features so deterministic local analysis comes before provider, AI, or commercial expansion.
+- Keep GitHub issue content aligned with `planning/portfolio/portfolio.json` and the Markdown body files.
+
+### Validation Expectations
+
+- Run `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` before marking done.
+- Verify child features are sequenced around deterministic engines before AI or commercial expansion.
+
+### Privacy Boundary
+
+- Never commit real bank statements, account numbers, card numbers, IDs, emails, phone numbers, or raw statement text.
+- Fixtures must be synthetic or redacted while preserving layout and parsing edge cases.
+
 ## Labels
 
 release:mvp, type:epic, area:parser, priority:high

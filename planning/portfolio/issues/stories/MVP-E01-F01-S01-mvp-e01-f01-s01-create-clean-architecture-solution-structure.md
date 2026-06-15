@@ -1,9 +1,9 @@
-# Story: Create Clean Architecture solution structure
+# Story: Create Next.js monorepo workspace structure
 
 ## Parent
 
 - Epic: MVP-E01 — Foundation
-- Feature: MVP-E01-F01 — Solution Architecture
+- Feature: MVP-E01-F01 — Monorepo Architecture
 
 ## Release / Milestone
 
@@ -11,28 +11,53 @@ MVP
 
 ## User Story
 
-As a product builder of LFAS, I want `Create Clean Architecture solution structure` so that the system can progress toward trusted, private financial analysis.
+As a product builder of LFAS, I want `Create Next.js monorepo workspace structure` so that the system can progress toward trusted, private financial analysis.
 
 ## Acceptance Criteria
 
-- [ ] Solution builds locally
-- [ ] All projects follow dependency direction
-- [ ] Project references are documented
+- [ ] Monorepo builds locally with PNPM and Turborepo
+- [ ] All workspaces follow package dependency direction
+- [ ] Workspace dependencies are documented
 
 ## Implementation Tasks
 
-- [ ] Create LFAS.sln
-- [ ] Create Domain/Application/Infrastructure/API projects
-- [ ] Create StatementParser/Reporting/AI projects
-- [ ] Create UnitTests and IntegrationTests projects
-- [ ] Configure solution build
+- [ ] Create PNPM workspace manifest
+- [ ] Create apps/web and core workspace packages
+- [ ] Create parser, reporting, and AI workspace package placeholders
+- [ ] Configure unit, integration, and E2E test locations
+- [ ] Configure Turborepo build pipeline
 
 ## Engineering Notes
 
-- Prefer deterministic business rules before AI.
+- Use Next.js App Router in `apps/web` for pages, route handlers, and server actions.
+- Keep deterministic financial rules in workspace packages, especially `packages/bank-statement-parser` or future domain packages.
 - Keep raw bank statement data isolated behind storage and privacy boundaries.
-- Add tests for parsing, validation, scoring, or security behavior where applicable.
-- Update documentation when behavior or contracts are introduced.
+- Use PNPM workspace dependencies and Turborepo tasks for build, lint, typecheck, test, and dev workflows.
+- Add Vitest, integration, or Playwright coverage for parsing, validation, scoring, upload, or security behavior where applicable.
+- Update documentation when behavior, package contracts, or route contracts are introduced.
+
+## Monorepo Enrichment
+
+### Target Workspace
+
+- Primary ownership: `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `packages/typescript-config`, and `packages/eslint-config`.
+- Start from the package contract, then wire it into `apps/web` only when needed.
+- Keep reusable business behavior in workspace packages and keep `apps/web` thin.
+
+### Implementation Focus
+
+- Keep root scripts aligned with PNPM workspace commands and Turborepo task names.
+- Document dependency direction so new packages do not create circular references.
+
+### Validation Expectations
+
+- Run `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` before marking done.
+- Add focused unit or integration coverage for the introduced behavior.
+
+### Privacy Boundary
+
+- Never commit real bank statements, account numbers, card numbers, IDs, emails, phone numbers, or raw statement text.
+- Logs, telemetry, tests, and issue examples must remain privacy-safe.
 
 ## Dependencies
 

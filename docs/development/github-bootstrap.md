@@ -17,6 +17,15 @@ If you want to recreate everything in a fresh repo, delete `.lfas/issue-map.json
 
 ## Relationship Sync
 
+After editing local portfolio issue bodies, validate and apply content updates
+to existing GitHub issues:
+
+```bash
+./scripts/portfolio/sync-issue-content.sh --check
+./scripts/portfolio/sync-issue-content.sh --dry-run
+./scripts/portfolio/sync-issue-content.sh --apply
+```
+
 After labels, milestones, and issues exist, validate and apply parent-child
 relationships to GitHub's native Relationships field:
 
@@ -26,10 +35,12 @@ relationships to GitHub's native Relationships field:
 ./scripts/portfolio/sync-issue-relationships.sh --apply
 ```
 
-The `--check` mode is local-only. The `--dry-run` mode reads the remote
-sub-issue state and reports missing relationships without changing GitHub. The
-`--apply` mode creates missing native sub-issue relationships by using
-`planning/portfolio/portfolio.json` as the parent-child source of truth.
+The `--check` mode is local-only. For content sync, `--dry-run` lists the
+planned title, body, milestone, and label updates. For relationship sync,
+`--dry-run` reads the remote sub-issue state and reports missing relationships
+without changing GitHub. The relationship `--apply` mode creates missing native
+sub-issue relationships by using `planning/portfolio/portfolio.json` as the
+parent-child source of truth.
 
 Remote sync requires an authenticated GitHub CLI session. Use
 `gh auth login -h github.com` or set `GH_TOKEN`/`GITHUB_TOKEN` with issue

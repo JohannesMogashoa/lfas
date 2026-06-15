@@ -4,8 +4,8 @@
 
 ```bash
 brew install gh jq git
+brew install node pnpm
 brew install --cask docker
-brew install --cask dotnet-sdk
 gh auth login
 ```
 
@@ -57,10 +57,14 @@ find scripts -name "*.sh" -exec chmod +x {} +
 CREATE_PROJECT=true ./scripts/portfolio/bootstrap-github.sh
 ```
 
-## 8. Optional: scaffold .NET solution
+## 8. Optional: validate the Node.js workspace
 
 ```bash
-./scripts/development/scaffold-dotnet-solution.sh LFAS
+pnpm install
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
 ```
 
 ## 9. Commit the kit
