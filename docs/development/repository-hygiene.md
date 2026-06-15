@@ -1,6 +1,7 @@
 # GitHub Actions and Repository Hygiene
 
-This package adds the repository hygiene needed for LFAS foundation work.
+This documentation captures the repository hygiene and automation used by the
+current PNPM/Turborepo workspace.
 
 ## Added files
 
@@ -9,13 +10,11 @@ This package adds the repository hygiene needed for LFAS foundation work.
 .editorconfig
 .gitattributes
 .env.example
-global.json
 .npmrc
 package.json
 pnpm-workspace.yaml
 pnpm-lock.yaml
 turbo.json
-docker-compose.yml
 .markdownlint.yml
 .github/workflows/*
 .github/dependabot.yml
@@ -34,7 +33,6 @@ docs/development/configure-branch-protection.md
 | `pr-validation.yml` | Prevent private financial sample files, validate scripts/JSON/YAML |
 | `codeql.yml` | Static security analysis for JavaScript and TypeScript |
 | `dependency-review.yml` | Blocks high severity dependency changes |
-| `docker-validate.yml` | Validates Docker Compose and PostgreSQL startup |
 | `markdown.yml` | Markdown linting |
 | `release-drafter.yml` | Maintains draft release notes |
 
@@ -43,8 +41,6 @@ docs/development/configure-branch-protection.md
 ```bash
 find scripts -name "*.sh" -exec chmod +x {} +
 ./scripts/maintenance/apply-repo-hygiene.sh
-docker compose config
-docker compose up -d postgres
 pnpm install
 pnpm lint
 pnpm typecheck

@@ -1,8 +1,7 @@
 # LFAS
 
 LFAS is a local-first **Local Financial Analysis System** built as a Next.js,
-TypeScript, PNPM, and Turborepo monorepo. The workspace shape follows the
-prototype in `/Users/johannesmogashoa/dev/sandbox/lfas`.
+TypeScript, PNPM, and Turborepo monorepo.
 
 ## Monorepo Shape
 

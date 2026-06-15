@@ -18,18 +18,17 @@ cd LFAS
 
 ## 3. Confirm the repo layout
 
-The source-controlled planning and automation folders should look like:
+The source-controlled workspace should look like:
 
 ```text
 LFAS/
+├── apps/
+├── packages/
 ├── docs/
 ├── planning/
 │   ├── backlog/
 │   └── portfolio/
 ├── scripts/
-│   ├── development/
-│   ├── maintenance/
-│   └── portfolio/
 └── .github/
 ```
 
@@ -87,28 +86,8 @@ Testing
 Done
 ```
 
-## Execution Order
+## Workspace Notes
 
-```text
-MVP-01 Foundation
-MVP-02 Statement Ingestion
-MVP-03 PDF Extraction
-MVP-04 Transaction Normalization
-MVP-05 Validation and Privacy
-MVP-06 Financial Engine
-MVP-07 Categorization
-MVP-08 Reporting
-
-MDP-01 Questionnaire Engine
-MDP-02 Scoring Engine
-MDP-03 Recommendations
-MDP-04 Financial Personas
-
-V1-01 Identity and Access
-V1-02 Multi-Tenancy
-V1-03 Billing
-V1-04 AI Platform
-V1-05 Open Banking
-V1-06 Predictive Analytics
-V1-07 Fraud and Risk Detection
-```
+Use `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` from the
+repository root during normal development. Prefer Turborepo filters for
+focused work when iterating on a single package or app.

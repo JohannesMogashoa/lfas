@@ -11,20 +11,14 @@ find scripts -name "*.sh" -exec chmod +x {} +
 # 3. Validate local files
 ./scripts/maintenance/apply-repo-hygiene.sh
 
-# 4. Validate Docker
-docker compose config
-docker compose up -d postgres
-docker compose ps
-docker compose down -v
-
-# 5. Validate Node.js workspace
+# 4. Validate Node.js workspace
 pnpm install
 pnpm lint
 pnpm typecheck
 pnpm build
 pnpm test
 
-# 6. Commit
+# 5. Commit
 git add .
 git commit -m "Add GitHub workflows and repository hygiene"
 git push

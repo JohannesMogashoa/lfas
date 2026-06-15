@@ -11,8 +11,8 @@ import tseslint from "typescript-eslint"
  * */
 export const config = [
   js.configs.recommended,
-  eslintConfigPrettier,
   ...tseslint.configs.recommended,
+  eslintConfigPrettier,
   {
     plugins: {
       turbo: turboPlugin,
@@ -27,6 +27,13 @@ export const config = [
     },
   },
   {
-    ignores: ["dist/**", ".next/**", "**/.turbo/**", "**/coverage/**"],
+    ignores: [
+      "**/dist/**",
+      "**/.next/**",
+      "**/.turbo/**",
+      "**/coverage/**",
+      "**/generated/**",
+      "**/*.d.ts",
+    ],
   },
 ]
