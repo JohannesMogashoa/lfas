@@ -16,16 +16,7 @@ packages/
 docs/
   architecture/              Architecture overview and diagrams
   adr/                       Architecture Decision Records
-  development/               Developer bootstrap and workflow documentation
-  planning/                  Roadmap, labels, and delivery definitions
   testing/                   Test conventions and commands
-planning/
-  backlog/                   Backlog source spreadsheets
-  portfolio/                 GitHub issue, label, milestone, and release data
-scripts/
-  development/               Developer bootstrap scripts
-  maintenance/               Repository maintenance scripts
-  portfolio/                 GitHub portfolio automation
 ```
 
 ## Run Locally
@@ -65,4 +56,4 @@ pnpm turbo test --filter=@lfas/bank-statement-parser
 
 See [Architecture](docs/architecture/overview.md) for workspace boundaries.
 See [Testing](docs/testing/unit-testing.md) for test conventions.
-See [Planning](planning/README.md) for backlog and portfolio source data.
+See [Contributing](CONTRIBUTING.md) for contribution guidance.
