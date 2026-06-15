@@ -1,6 +1,6 @@
 # Planning
 
-Planning data is source material for backlog management and GitHub portfolio
+Planning data is source material for backlog management and GitHub issue
 automation. It is separate from runtime code in `apps/` and `packages/`.
 
 ## Contents

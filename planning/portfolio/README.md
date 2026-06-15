@@ -1,7 +1,7 @@
 # Portfolio
 
-This directory contains the GitHub portfolio source data used to create and
-sync LFAS backlog issues.
+This directory contains the GitHub issue source data used to create and sync
+LFAS backlog issues.
 
 ## Files
 

@@ -46,24 +46,8 @@ Remote sync requires an authenticated GitHub CLI session. Use
 `gh auth login -h github.com` or set `GH_TOKEN`/`GITHUB_TOKEN` with issue
 permissions before running `--dry-run` or `--apply`.
 
-## GitHub Project V2
+## What This Does Not Do
 
-GitHub Projects are more restrictive from CLI than issues/labels/milestones.
-The script includes `scripts/portfolio/create-project.sh`, but the most
-reliable workflow is:
-
-1. Run `./scripts/portfolio/bootstrap-github.sh`
-2. Create a GitHub Project board in the UI
-3. Add issues by filtering labels:
-   - `release:mvp`
-   - `release:mdp`
-   - `release:v1`
-
-## Recommended Views
-
-- MVP Board
-- MDP Board
-- V1 Board
-- By Area
-- By Priority
-- Blocked Items
+This bootstrap flow does not create a GitHub Project board. If you want a
+board, create one in the GitHub UI after labels, milestones, and issues are in
+place.

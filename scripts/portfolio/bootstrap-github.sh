@@ -39,19 +39,6 @@ echo ""
 "${SCRIPT_DIR}/create-milestones.sh"
 "${SCRIPT_DIR}/create-issues.sh"
 
-if [[ "${CREATE_PROJECT:-false}" == "true" ]]; then
-  "${SCRIPT_DIR}/create-project.sh"
-else
-  echo ""
-  echo "Skipping GitHub Project creation."
-  echo "To attempt GitHub Projects v2 creation too, run:"
-  echo "  CREATE_PROJECT=true ./scripts/portfolio/bootstrap-github.sh"
-fi
-
 echo ""
 echo "Bootstrap complete."
 echo "Issue map written to: .lfas/issue-map.json"
-echo ""
-echo "Recommended next step:"
-echo "  Open your GitHub repo Issues tab and create a Kanban Project with columns:"
-echo "  Backlog, Ready, In Progress, Blocked, Review, Testing, Done"

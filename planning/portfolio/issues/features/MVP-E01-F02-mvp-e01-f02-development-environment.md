@@ -22,7 +22,6 @@ Deliver the capability required for `Development Environment` as part of `Founda
 ## Stories
 
 - [ ] Configure macOS developer bootstrap
-- [ ] Create Docker Compose local stack
 - [ ] Configure application settings and secrets
 - [ ] Create repository documentation baseline
 

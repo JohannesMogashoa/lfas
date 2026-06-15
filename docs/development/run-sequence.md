@@ -52,9 +52,8 @@ find scripts -name "*.sh" -exec chmod +x {} +
 
 ## 7. Optional: create GitHub Project too
 
-```bash
-CREATE_PROJECT=true ./scripts/portfolio/bootstrap-github.sh
-```
+This step has been removed. If you want a GitHub Project board, create it in
+the GitHub UI after bootstrap.
 
 ## 8. Optional: validate the Node.js workspace
 

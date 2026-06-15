@@ -56,13 +56,6 @@ items:
     parent: MVP-E01-F02
     depends_on: MVP-E01-F01-S04
     body_file: portfolio/issues/stories/MVP-E01-F02-S01-mvp-e01-f02-s01-configure-macos-developer-bootstrap.md
-  - key: MVP-E01-F02-S02
-    type: story
-    title: "[MVP-E01-F02-S02] Create Docker Compose local stack"
-    milestone: MVP
-    labels: ["release:mvp", "type:story", "area:devops", "priority:high"]
-    parent: MVP-E01-F02
-    body_file: portfolio/issues/stories/MVP-E01-F02-S02-mvp-e01-f02-s02-create-docker-compose-local-stack.md
   - key: MVP-E01-F02-S03
     type: story
     title: "[MVP-E01-F02-S03] Configure application settings and secrets"
