@@ -1,17 +1,21 @@
-import "@lfas/ui/globals.css"
+import "@lfas/ui/globals.css";
 
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/theme-provider";
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode
+    children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en" suppressHydrationWarning className="font-sans antialiased">
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
-      </body>
-    </html>
-  )
+    return (
+        <html
+            lang="en"
+            suppressHydrationWarning
+            className="font-sans antialiased"
+        >
+            <body>
+                <ThemeProvider>{children}</ThemeProvider>
+            </body>
+        </html>
+    );
 }

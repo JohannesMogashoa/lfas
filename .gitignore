@@ -8,91 +8,10 @@
 [Oo]bj/
 [Dd]ebug/
 [Rr]elease/
-x64/
-x86/
-[Aa][Rr][Mm]/
-[Aa][Rr][Mm]64/
-bld/
-[Bb]uild/
-[Ll]og/
-[Ll]ogs/
-TestResults/
 coverage/
 coverage-results/
-*.trx
-*.coverage
-*.coveragexml
-*.nupkg
-*.snupkg
-*.symbols.nupkg
 
-# .NET generated
-project.lock.json
-project.assets.json
-.nuget/
-packages/
-*.user
-*.rsuser
-*.suo
-*.userosscache
-*.sln.docstates
-*.generated.cs
-Generated/
-GeneratedFiles/
-
-# ASP.NET / local settings
-appsettings.Local.json
-appsettings.*.Local.json
-appsettings.Production.json
-secrets.json
-.env
-.env.*
-!.env.example
-
-# EF Core / database local artifacts
-*.db
-*.db-shm
-*.db-wal
-*.sqlite
-*.sqlite3
-*.mdf
-*.ldf
-
-# IDEs
-.vs/
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-!.vscode/launch.json
-!.vscode/tasks.json
-.idea/
-*.DotSettings.user
-
-# Rider / JetBrains
-.idea/
-_ReSharper*/
-*.sln.iml
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-Icon?
-._*
-.Spotlight-V100
-.Trashes
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# Linux
-*~
-.directory
-
-# Node / frontend future support
+# Node / frontend
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -103,6 +22,21 @@ dist/
 .next/
 .nuxt/
 coverage-final.json
+.env
+.env.*
+!.env.example
+
+# IDEs and OS files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+.idea/
+*.DotSettings.user
+.DS_Store
+Thumbs.db
+*~
 
 # Python tooling if used for experiments only
 __pycache__/
@@ -148,6 +82,17 @@ fixtures/private/
 *private-statement*
 *account-statement*
 
+# Product package names may include "bank-statement"; only financial document
+# artifacts should be ignored by the patterns above.
+!packages/bank-statement-parser/
+!packages/bank-statement-parser/package.json
+!packages/bank-statement-parser/eslint.config.js
+!packages/bank-statement-parser/tsconfig.json
+!packages/bank-statement-parser/src/
+!packages/bank-statement-parser/src/**
+packages/bank-statement-parser/.turbo/
+packages/bank-statement-parser/node_modules/
+
 # AI / model artifacts
 models/
 ollama/
@@ -168,30 +113,7 @@ reports/generated/
 
 # Tool state
 .lfas/
-.cache/
-.tmp/
-tmp/
-temp/
-
-# Logs and diagnostics
-*.log
-*.log.*
-serilog-*.txt
-diagnostics/
-crash-dumps/
-
-# Certificates / keys
-*.pem
-*.key
-*.pfx
-*.p12
-*.cer
-*.crt
-*.csr
-id_rsa
-id_rsa.pub
 
 # Keep useful examples
-!.env.example
 !samples/README.md
 !fixtures/README.md
