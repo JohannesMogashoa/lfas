@@ -20,9 +20,50 @@ env:
   PNPM_VERSION: '10.33.4'
 
 jobs:
+  repository-hygiene:
+    name: Repository Hygiene
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate no private financial sample files are committed
+        shell: bash
+        run: |
+          set -euo pipefail
+          forbidden=$(git ls-files | grep -Ei '(^|/)(raw-statements|statement-storage|samples/private|fixtures/private)(/|$)|\.(pdf|xlsx|csv)\.private$|(^|/)(bank-statement|account-statement)[^/]*\.(pdf|xlsx|csv|ofx|qif|qfx)$' || true)
+          if [[ -n "$forbidden" ]]; then
+            echo "Forbidden sensitive/private financial files detected:"
+            echo "$forbidden"
+            exit 1
+          fi
+
+      - name: Validate shell scripts
+        shell: bash
+        run: git ls-files "*.sh" -z | xargs -0 -r bash -n
+
+      - name: Validate JSON files
+        shell: bash
+        run: git ls-files "*.json" -z | xargs -0 -r -I{} jq empty "{}"
+
+      - name: Validate workflow YAML
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .github/workflows
+          config_data: |
+            extends: default
+            rules:
+              line-length: disable
+              truthy: disable
+              comments-indentation: disable
+              document-start: disable
+              brackets: disable
+
   build-test:
     name: Build and Test
     runs-on: ubuntu-latest
+    needs: repository-hygiene
 
     steps:
       - name: Checkout
@@ -44,6 +85,9 @@ jobs:
 
       - name: Format check
         run: pnpm format
+
+      - name: Markdown lint
+        run: pnpm dlx markdownlint-cli2 "**/*.md" "!**/node_modules/**" "!**/.next/**" "!**/.turbo/**" "!**/dist/**" "!**/coverage/**"
 
       - name: Lint
         run: pnpm lint
