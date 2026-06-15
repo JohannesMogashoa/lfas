@@ -8,28 +8,28 @@ items:
     body_file: portfolio/issues/epics/MVP-E01-mvp-e01-foundation.md
   - key: MVP-E01-F01
     type: feature
-    title: "[MVP-E01-F01] Solution Architecture"
+    title: "[MVP-E01-F01] Monorepo Architecture"
     milestone: MVP
     labels: ["release:mvp", "type:feature", "area:architecture", "priority:high"]
     parent: MVP-E01
     body_file: portfolio/issues/features/MVP-E01-F01-mvp-e01-f01-solution-architecture.md
   - key: MVP-E01-F01-S01
     type: story
-    title: "[MVP-E01-F01-S01] Create Clean Architecture solution structure"
+    title: "[MVP-E01-F01-S01] Create Next.js monorepo workspace structure"
     milestone: MVP
     labels: ["release:mvp", "type:story", "area:architecture", "priority:high"]
     parent: MVP-E01-F01
     body_file: portfolio/issues/stories/MVP-E01-F01-S01-mvp-e01-f01-s01-create-clean-architecture-solution-structure.md
   - key: MVP-E01-F01-S02
     type: story
-    title: "[MVP-E01-F01-S02] Configure dependency boundaries and project references"
+    title: "[MVP-E01-F01-S02] Configure workspace package boundaries and dependencies"
     milestone: MVP
     labels: ["release:mvp", "type:story", "area:architecture", "priority:high"]
     parent: MVP-E01-F01
     body_file: portfolio/issues/stories/MVP-E01-F01-S02-mvp-e01-f01-s02-configure-dependency-boundaries-and-project-references.md
   - key: MVP-E01-F01-S03
     type: story
-    title: "[MVP-E01-F01-S03] Create Shared Kernel primitives"
+    title: "[MVP-E01-F01-S03] Create financial domain primitives package"
     milestone: MVP
     labels: ["release:mvp", "type:story", "area:architecture", "priority:high"]
     parent: MVP-E01-F01
@@ -186,7 +186,7 @@ items:
     body_file: portfolio/issues/features/MVP-E02-F01-mvp-e02-f01-upload-workflow.md
   - key: MVP-E02-F01-S01
     type: story
-    title: "[MVP-E02-F01-S01] Create statement upload API endpoint"
+    title: "[MVP-E02-F01-S01] Create statement upload route handler"
     milestone: MVP
     labels: ["release:mvp", "type:story", "area:api", "priority:high"]
     parent: MVP-E02-F01
@@ -292,7 +292,7 @@ items:
     body_file: portfolio/issues/features/MVP-E03-F01-mvp-e03-f01-digital-pdf-extraction.md
   - key: MVP-E03-F01-S01
     type: story
-    title: "[MVP-E03-F01-S01] Integrate PdfPig digital text extraction"
+    title: "[MVP-E03-F01-S01] Integrate Node PDF text extraction"
     milestone: MVP
     labels: ["release:mvp", "type:story", "area:parser", "priority:high"]
     parent: MVP-E03-F01
@@ -327,7 +327,7 @@ items:
     body_file: portfolio/issues/features/MVP-E03-F02-mvp-e03-f02-ocr-extraction.md
   - key: MVP-E03-F02-S01
     type: story
-    title: "[MVP-E03-F02-S01] Integrate Tesseract OCR service"
+    title: "[MVP-E03-F02-S01] Integrate Node OCR service adapter"
     milestone: MVP
     labels: ["release:mvp", "type:story", "area:ocr", "priority:high"]
     parent: MVP-E03-F02
@@ -884,7 +884,7 @@ items:
     body_file: portfolio/issues/stories/MVP-E08-F01-S02-mvp-e08-f01-s02-create-executive-insight-generator.md
   - key: MVP-E08-F01-S03
     type: story
-    title: "[MVP-E08-F01-S03] Create report data API endpoint"
+    title: "[MVP-E08-F01-S03] Create report data route handler"
     milestone: MVP
     labels: ["release:mvp", "type:story", "area:reporting", "priority:medium"]
     parent: MVP-E08-F01
@@ -898,7 +898,7 @@ items:
     body_file: portfolio/issues/features/MVP-E08-F02-mvp-e08-f02-pdf-and-excel-exports.md
   - key: MVP-E08-F02-S01
     type: story
-    title: "[MVP-E08-F02-S01] Integrate QuestPDF report generation"
+    title: "[MVP-E08-F02-S01] Integrate PDF report generation for Node"
     milestone: MVP
     labels: ["release:mvp", "type:story", "area:reporting", "priority:medium"]
     parent: MVP-E08-F02
@@ -906,7 +906,7 @@ items:
     body_file: portfolio/issues/stories/MVP-E08-F02-S01-mvp-e08-f02-s01-integrate-questpdf-report-generation.md
   - key: MVP-E08-F02-S02
     type: story
-    title: "[MVP-E08-F02-S02] Create Excel export using ClosedXML"
+    title: "[MVP-E08-F02-S02] Create Excel export using a Node workbook library"
     milestone: MVP
     labels: ["release:mvp", "type:story", "area:reporting", "priority:medium"]
     parent: MVP-E08-F02

@@ -1,84 +1,69 @@
 # LFAS
 
-LFAS is a fully .NET monorepo for the **Local Financial Analysis System**. The solution is centered on .NET Aspire for local orchestration and uses Blazor for the frontend.
+LFAS is a local-first **Local Financial Analysis System** built as a Next.js,
+TypeScript, PNPM, and Turborepo monorepo. The workspace shape follows the
+prototype in `/Users/johannesmogashoa/dev/sandbox/lfas`.
 
-## Solution Shape
+## Monorepo Shape
 
 ```text
-LFAS.slnx
-src/
-  LFAS.AppHost/           Aspire orchestrator for the platform
-  LFAS.ServiceDefaults/   Shared health, telemetry, resilience, and discovery defaults
-  LFAS.Api/               ASP.NET Core API
-  LFAS.Web/               Blazor web frontend
-  LFAS.Application/       Application use cases
-  LFAS.Domain/            Domain model and business rules
-  LFAS.Infrastructure/    Persistence and external integrations
-  LFAS.SharedKernel/      Cross-cutting domain primitives
-  LFAS.StatementParser/   Bank statement ingestion/parsing
-  LFAS.Reporting/         Reporting workflows
-  LFAS.AI/                AI-assisted analysis capabilities
-tests/
-  LFAS.UnitTests/
-  LFAS.IntegrationTests/
+apps/
+  web/                       Next.js App Router application
+packages/
+  ui/                        Shared shadcn/ui-based component package
+  bank-statement-parser/     Deterministic statement parsing package
+  eslint-config/             Shared ESLint configuration
+  typescript-config/         Shared TypeScript configuration
 docs/
-  architecture/            Architecture overview and diagrams
-  adr/                    Architecture Decision Records
-  configuration/          Local configuration and secrets guidance
-  development/            Developer bootstrap and workflow documentation
-  planning/               Roadmap, labels, and delivery definitions
-  testing/                Test conventions and commands
+  architecture/              Architecture overview and diagrams
+  adr/                       Architecture Decision Records
+  development/               Developer bootstrap and workflow documentation
+  planning/                  Roadmap, labels, and delivery definitions
+  testing/                   Test conventions and commands
 planning/
-  backlog/                Backlog source spreadsheets
-  portfolio/              GitHub issue, label, milestone, and release data
+  backlog/                   Backlog source spreadsheets
+  portfolio/                 GitHub issue, label, milestone, and release data
 scripts/
-  development/            Developer bootstrap scripts
-  maintenance/            Repository maintenance scripts
-  portfolio/              GitHub portfolio automation
+  development/               Developer bootstrap scripts
+  maintenance/               Repository maintenance scripts
+  portfolio/                 GitHub portfolio automation
 ```
 
 ## Run Locally
 
-Run the Aspire AppHost:
+Install dependencies and start the web app:
 
 ```bash
-dotnet run --project src/LFAS.AppHost/LFAS.AppHost.csproj
+pnpm install
+pnpm dev
 ```
 
-The AppHost orchestrates:
+The primary app is expected at `apps/web`. Shared UI components should be
+imported from `@lfas/ui`, for example:
 
-- `postgres` with `pgAdmin`
-- `api` from `LFAS.Api`
-- `web` from `LFAS.Web`
+```tsx
+import { Button } from "@lfas/ui/components/button";
+```
 
 ## Development
-
-Validate local prerequisites and start PostgreSQL:
-
-```bash
-./scripts/development/setup-dev.sh
-```
-
-On Windows, run the PowerShell bootstrap:
-
-```powershell
-.\scripts\development\setup-dev.ps1
-```
 
 Useful commands:
 
 ```bash
-dotnet restore LFAS.slnx
-dotnet build LFAS.slnx
-dotnet test LFAS.slnx
+pnpm format
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
 ```
 
-See [Developer Bootstrap](docs/development/developer-bootstrap.md) for
-platform-specific details and skip options.
+Use Turborepo filters for focused work:
 
-See [Local Configuration and Secrets](docs/configuration/local-configuration.md) for
-appsettings, `.env`, and user-secrets guidance.
+```bash
+pnpm turbo build --filter=@lfas/web
+pnpm turbo test --filter=@lfas/bank-statement-parser
+```
 
-See [Testing](docs/testing/unit-testing.md) for unit test conventions.
-
+See [Architecture](docs/architecture/overview.md) for workspace boundaries.
+See [Testing](docs/testing/unit-testing.md) for test conventions.
 See [Planning](planning/README.md) for backlog and portfolio source data.

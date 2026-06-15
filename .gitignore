@@ -1,6 +1,6 @@
 # =========================
 # LFAS .gitignore
-# .NET / C# / Rider / VS Code / Docker / Local AI / Financial Data Safety
+# Node.js / Next.js / VS Code / Docker / Local AI / Financial Data Safety
 # =========================
 
 # Build results
@@ -98,6 +98,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-store/
+.turbo/
 dist/
 .next/
 .nuxt/

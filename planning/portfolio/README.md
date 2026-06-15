@@ -13,3 +13,8 @@ sync LFAS backlog issues.
 
 Run `scripts/portfolio/summarize-backlog.sh` from the repository root to inspect
 the model before creating or syncing GitHub issues.
+
+Use `scripts/portfolio/sync-issue-content.sh` to push local title, body,
+milestone, and label changes to existing GitHub issues. Use
+`scripts/portfolio/sync-issue-relationships.sh` to sync native parent-child
+relationships.

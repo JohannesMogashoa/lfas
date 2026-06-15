@@ -1,0 +1,1 @@
+export { default } from "@lfas/ui/postcss.config";

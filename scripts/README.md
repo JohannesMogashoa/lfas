@@ -9,8 +9,8 @@ repository root so relative paths resolve consistently.
   start the local PostgreSQL container.
 - `development/setup-dev.ps1` provides the same developer bootstrap workflow
   for PowerShell.
-- `development/scaffold-dotnet-solution.sh` is retained as a reference scaffold
-  helper for clean-room solution generation.
+- New workspace scaffolding should follow the PNPM/Turborepo structure in
+  `apps/` and `packages/`.
 
 ## Maintenance
 
@@ -22,9 +22,19 @@ repository root so relative paths resolve consistently.
 - `portfolio/summarize-backlog.sh` summarizes the planning portfolio.
 - `portfolio/bootstrap-github.sh` creates labels, milestones, and issues from
   `planning/portfolio`.
+- `portfolio/sync-issue-content.sh` updates existing GitHub issue titles,
+  bodies, milestones, and labels from `planning/portfolio`.
 - `portfolio/sync-issue-relationships.sh` syncs native GitHub issue
   Relationships from `planning/portfolio/portfolio.json` and the generated
   `.lfas/issue-map.json`.
+
+Validate content syncs before applying them:
+
+```bash
+./scripts/portfolio/sync-issue-content.sh --check
+./scripts/portfolio/sync-issue-content.sh --dry-run
+./scripts/portfolio/sync-issue-content.sh --apply
+```
 
 Validate relationship syncs before applying them:
 
@@ -34,6 +44,8 @@ Validate relationship syncs before applying them:
 ./scripts/portfolio/sync-issue-relationships.sh --apply
 ```
 
-The dry run compares the local relationship plan with remote GitHub sub-issues.
-Apply creates missing native sub-issue relationships; it does not edit issue
-bodies or remove extra remote relationships.
+The content dry run lists the issue title, milestone, labels, and Markdown body
+file that will be applied. The relationship dry run compares the local
+relationship plan with remote GitHub sub-issues. Relationship apply creates
+missing native sub-issue relationships; it does not remove extra remote
+relationships.

@@ -10,7 +10,11 @@ This package adds the repository hygiene needed for LFAS foundation work.
 .gitattributes
 .env.example
 global.json
-NuGet.config
+.npmrc
+package.json
+pnpm-workspace.yaml
+pnpm-lock.yaml
+turbo.json
 docker-compose.yml
 .markdownlint.yml
 .github/workflows/*
@@ -26,9 +30,9 @@ docs/development/configure-branch-protection.md
 
 | Workflow | Purpose |
 | --- | --- |
-| `ci.yml` | Restore, build, test, upload test/coverage artifacts |
+| `ci.yml` | Install, lint, typecheck, test, and build the PNPM workspace |
 | `pr-validation.yml` | Prevent private financial sample files, validate scripts/JSON/YAML |
-| `codeql.yml` | Static security analysis for C# |
+| `codeql.yml` | Static security analysis for JavaScript and TypeScript |
 | `dependency-review.yml` | Blocks high severity dependency changes |
 | `docker-validate.yml` | Validates Docker Compose and PostgreSQL startup |
 | `markdown.yml` | Markdown linting |
@@ -41,9 +45,11 @@ find scripts -name "*.sh" -exec chmod +x {} +
 ./scripts/maintenance/apply-repo-hygiene.sh
 docker compose config
 docker compose up -d postgres
-dotnet restore
-dotnet build
-dotnet test
+pnpm install
+pnpm lint
+pnpm typecheck
+pnpm build
+pnpm test
 ```
 
 ## Security rule

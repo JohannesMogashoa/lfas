@@ -26,3 +26,5 @@ jobs:
             !**/bin/**
             !**/obj/**
             !node_modules/**
+            !.next/**
+            !.turbo/**

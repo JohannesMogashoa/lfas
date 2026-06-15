@@ -14,8 +14,10 @@ Closes #
 
 ## Validation
 
-- [ ] `dotnet build` passes locally
-- [ ] `dotnet test` passes locally
+- [ ] `pnpm lint` passes locally
+- [ ] `pnpm typecheck` passes locally
+- [ ] `pnpm test` passes locally
+- [ ] `pnpm build` passes locally
 - [ ] Docker compose validation passes if touched
 - [ ] Documentation updated where needed
 
