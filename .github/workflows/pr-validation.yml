@@ -46,7 +46,7 @@ jobs:
       - name: Validate YAML parse
         uses: ibiqlik/action-yamllint@v3
         with:
-          file_or_dir: .github/workflows docker-compose.yml
+          file_or_dir: .github/workflows
           config_data: |
             extends: default
             rules:
@@ -55,3 +55,12 @@ jobs:
               comments-indentation: disable
               document-start: disable
               brackets: disable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Workspace lint
+        run: pnpm lint
+
+      - name: Workspace typecheck
+        run: pnpm typecheck
