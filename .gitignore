@@ -82,6 +82,17 @@ fixtures/private/
 *private-statement*
 *account-statement*
 
+# Product package names may include "bank-statement"; only financial document
+# artifacts should be ignored by the patterns above.
+!packages/bank-statement-parser/
+!packages/bank-statement-parser/package.json
+!packages/bank-statement-parser/eslint.config.js
+!packages/bank-statement-parser/tsconfig.json
+!packages/bank-statement-parser/src/
+!packages/bank-statement-parser/src/**
+packages/bank-statement-parser/.turbo/
+packages/bank-statement-parser/node_modules/
+
 # AI / model artifacts
 models/
 ollama/

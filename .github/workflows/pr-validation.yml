@@ -13,6 +13,10 @@ concurrency:
   group: pr-validation-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '10.33.4'
+
 jobs:
   validate:
     name: Validate Repository
@@ -22,11 +26,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
       - name: Validate no private financial sample files are committed
         shell: bash
         run: |
           set -euo pipefail
-          forbidden=$(git ls-files | grep -Ei '(raw-statements|statement-storage|samples/private|fixtures/private|\.pdf\.private|\.xlsx\.private|\.csv\.private|bank-statement|account-statement)' || true)
+          forbidden=$(git ls-files | grep -Ei '(^|/)(raw-statements|statement-storage|samples/private|fixtures/private)(/|$)|\.(pdf|xlsx|csv)\.private$|(^|/)(bank-statement|account-statement)[^/]*\.(pdf|xlsx|csv|ofx|qif|qfx)$' || true)
           if [[ -n "$forbidden" ]]; then
             echo "Forbidden sensitive/private financial files detected:"
             echo "$forbidden"

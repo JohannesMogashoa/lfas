@@ -1,0 +1,28 @@
+{
+    "name": "@lfas/bank-statement-parser",
+    "version": "0.0.0",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "lint": "eslint",
+        "format": "prettier --write \"src/**/*.ts\" \"*.{ts,js,json}\"",
+        "typecheck": "tsc --noEmit",
+        "test": "echo \"No bank statement parser tests configured yet\""
+    },
+    "dependencies": {
+        "unpdf": "^1.6.2"
+    },
+    "devDependencies": {
+        "@lfas/eslint-config": "workspace:*",
+        "@lfas/typescript-config": "workspace:*",
+        "@types/node": "^22.15.3",
+        "eslint": "^9.39.1",
+        "typescript": "5.9.2"
+    },
+    "exports": {
+        ".": {
+            "types": "./src/index.ts",
+            "default": "./src/index.ts"
+        }
+    }
+}
