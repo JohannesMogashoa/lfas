@@ -87,7 +87,7 @@ jobs:
         run: pnpm format
 
       - name: Markdown lint
-        run: pnpm dlx markdownlint-cli2 "**/*.md" "!**/node_modules/**" "!**/.next/**" "!**/.turbo/**" "!**/dist/**" "!**/coverage/**"
+        run: pnpm dlx markdownlint-cli2 "**/*.md" "!**/node_modules/**" "!**/.next/**" "!**/.turbo/**" "!**/dist/**" "!**/coverage/**" "!apps/web/.agents/**" "!apps/web/.claude/**" "!apps/web/convex/_generated/**"
 
       - name: Lint
         run: pnpm lint
