@@ -1,6 +1,7 @@
 {
     "extends": "@lfas/typescript-config/base.json",
     "compilerOptions": {
+        "allowImportingTsExtensions": true,
         "paths": {
             "@lfas/bank-statement-parser": ["./src/index.ts"]
         }

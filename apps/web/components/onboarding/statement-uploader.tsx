@@ -1,43 +1,22 @@
 "use client";
 
 import React, { startTransition, useRef, useState } from "react";
-import { TableUploader } from "./table-uploader";
+import { TableUploader } from "../table-uploader";
 import {
     type StatementUploadResult,
     uploadFileAction,
 } from "@/actions/statement-upload";
 import { type FileWithPreview } from "@/hooks/use-file-upload";
-import { type BankTransaction } from "@lfas/bank-statement-parser";
-import { ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@lfas/ui/components/data-table";
 
-const columns: ColumnDef<BankTransaction>[] = [
-    {
-        accessorKey: "date",
-        header: "Date",
-    },
-    {
-        accessorKey: "transactionDescription",
-        header: "Description",
-    },
-    {
-        accessorKey: "amount",
-        header: "Amount",
-    },
-    {
-        accessorKey: "debitOrCredit",
-        header: "Type",
-    },
-    {
-        accessorKey: "balance",
-        header: "Running Balance",
-    },
-];
+type Props = {
+    onNext: () => void;
+    setResult: (r: StatementUploadResult) => void;
+};
 
-const StatementUploader = () => {
+const StatementUploader = ({ onNext, setResult }: Props) => {
     const statementsFormRef = useRef<HTMLFormElement>(null);
     const statementsInputRef = useRef<HTMLInputElement>(null);
-    const [uploadResult, setUploadResult] = useState<StatementUploadResult>();
+
     const [failed, setFailed] = useState<string[]>([]);
 
     const submitStatements = (dataTransfer: DataTransfer) => {
@@ -50,7 +29,8 @@ const StatementUploader = () => {
                 const response = await uploadFileAction(formData);
 
                 if (response.success) {
-                    setUploadResult(response);
+                    setResult(response);
+                    onNext();
                 }
             });
         }
@@ -83,13 +63,6 @@ const StatementUploader = () => {
                     inputRef={statementsInputRef}
                 />
             </form>
-
-            {uploadResult && uploadResult.transactions.length > 0 && (
-                <DataTable
-                    columns={columns}
-                    data={uploadResult.transactions}
-                />
-            )}
 
             {failed.length > 0 && (
                 <div>

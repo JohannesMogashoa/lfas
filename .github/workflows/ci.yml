@@ -16,8 +16,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20'
-  PNPM_VERSION: '10.33.4'
+  NODE_VERSION: '24.16'
+  PNPM_VERSION: '11.7.0'
 
 jobs:
   repository-hygiene:
@@ -87,7 +87,7 @@ jobs:
         run: pnpm format
 
       - name: Markdown lint
-        run: pnpm dlx markdownlint-cli2 "**/*.md" "!**/node_modules/**" "!**/.next/**" "!**/.turbo/**" "!**/dist/**" "!**/coverage/**"
+        run: pnpm dlx markdownlint-cli2 "**/*.md" "!**/node_modules/**" "!**/.next/**" "!**/.turbo/**" "!**/dist/**" "!**/coverage/**" "!apps/web/.agents/**" "!apps/web/.claude/**" "!apps/web/convex/_generated/**"
 
       - name: Lint
         run: pnpm lint

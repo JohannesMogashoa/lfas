@@ -1,5 +1,11 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "CONVEX_URL",
+    "NEXT_PUBLIC_CONVEX_URL",
+    "NODE_ENV",
+    "STATEMENT_FINGERPRINT_SECRET"
+  ],
   "ui": "tui",
   "tasks": {
     "build": {

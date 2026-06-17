@@ -1,6 +1,7 @@
 {
   "extends": "@lfas/typescript-config/nextjs.json",
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "paths": {
       "@/*": ["./*"],
       "@lfas/ui/*": ["../../packages/ui/src/*"]
