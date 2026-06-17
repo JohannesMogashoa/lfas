@@ -1,0 +1,32 @@
+{
+    "name": "@lfas/statement-processing",
+    "version": "0.0.0",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "lint": "eslint",
+        "format": "prettier --write \"src/**/*.ts\" \"*.{ts,js,json}\"",
+        "typecheck": "tsc --noEmit",
+        "test": "node --experimental-strip-types --test \"src/**/*.test.ts\""
+    },
+    "dependencies": {
+        "@lfas/bank-statement-parser": "workspace:*"
+    },
+    "devDependencies": {
+        "@lfas/eslint-config": "workspace:*",
+        "@lfas/typescript-config": "workspace:*",
+        "@types/node": "^22.15.3",
+        "eslint": "^9.39.1",
+        "typescript": "5.9.2"
+    },
+    "exports": {
+        ".": {
+            "types": "./src/index.ts",
+            "default": "./src/index.ts"
+        },
+        "./states": {
+            "types": "./src/states.ts",
+            "default": "./src/states.ts"
+        }
+    }
+}

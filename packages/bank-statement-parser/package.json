@@ -7,7 +7,7 @@
         "lint": "eslint",
         "format": "prettier --write \"src/**/*.ts\" \"*.{ts,js,json}\"",
         "typecheck": "tsc --noEmit",
-        "test": "echo \"No bank statement parser tests configured yet\""
+        "test": "node --experimental-strip-types --test src/parsers/*.test.ts"
     },
     "dependencies": {
         "unpdf": "^1.6.2"
