@@ -11,6 +11,14 @@ export {
 export { parseDecimalAmountToMinorUnits } from "./money.ts";
 export { normalizeParsedTransactions } from "./normalization.ts";
 export {
+    createRedactionToken,
+    createSanitizedAiStatementContract,
+    detectSensitiveContent,
+    inspectPromptCandidate,
+    redactSensitiveText,
+    summarizePrivacyFindings,
+} from "./privacy.ts";
+export {
     createDuplicateTransactionFingerprint,
     createValidationReport,
     detectDuplicateTransactions,
@@ -32,6 +40,26 @@ export type {
     ReportDescriptor,
     StatementSubmissionMetadata,
 } from "./types.ts";
+export type {
+    PrivacyDetectionInput,
+    PrivacyDetectionResult,
+    PrivacyFinding,
+    PrivacyFindingConfidence,
+    PrivacyFindingLocation,
+    PrivacyFindingType,
+    PrivacySummary,
+    PrivacyTextChunk,
+    PromptCandidateSource,
+    PromptInspectionFailureCode,
+    PromptInspectionInput,
+    PromptInspectionResult,
+    RedactionInput,
+    RedactionResult,
+    RedactionToken,
+    SanitizedAiStatementContract,
+    SanitizedAiStatementInput,
+    SanitizedAiTransaction,
+} from "./privacy.ts";
 export type {
     StatementValidationInput,
     ValidationCode,

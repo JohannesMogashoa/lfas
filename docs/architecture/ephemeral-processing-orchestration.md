@@ -48,6 +48,10 @@ Convex tables are intentionally source-safe:
   finding count, warning count, failure count, and transaction count. Detailed
   findings must remain bounded to stable validation codes, counts, dates,
   minor-unit deltas, and source line references.
+- Privacy and redaction boundaries store only detector categories, counts, safe
+  offsets, masked text, and secret-backed local tokens. Public privacy contracts
+  must not return original account numbers, card numbers, identity numbers,
+  emails, phone numbers, or raw statement text.
 - `statementReports` stores report metadata and optional generated report
   storage IDs.
 - `statementAuditEvents` stores upload acceptance and source disposal audit
@@ -65,6 +69,15 @@ storage, or analytics:
 
 The browser only initiates uploads and receives display data. It is not trusted
 to strip, redact, or normalize statement content.
+
+## AI Boundary
+
+AI prompt construction must use the sanitized statement contract from
+`packages/statement-processing`. The contract contains approved transaction
+fields, validation summaries, and redaction metadata only. Future AI
+orchestration must inspect prompt candidates before model invocation and block
+unsafe prompts with safe failure codes and detector counts rather than logging
+prompt text.
 
 ## Convex Setup
 
