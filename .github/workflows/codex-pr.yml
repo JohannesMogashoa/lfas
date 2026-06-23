@@ -1,0 +1,162 @@
+name: Codex pull request review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: codex-review
+  cancel-in-progress: false
+
+jobs:
+  codex:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      final_message: ${{ steps.resolve_output.outputs.final_message }}
+      codex_failed: ${{ steps.handle_failure.outputs.codex_failed }}
+      failure_reason: ${{ steps.handle_failure.outputs.failure_reason }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: refs/pull/${{ github.event.pull_request.number }}/merge
+          persist-credentials: false
+
+      - name: Pre-fetch base and head refs
+        env:
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          git fetch --no-tags origin \
+            "$PR_BASE_REF" \
+            "+refs/pull/$PR_NUMBER/head"
+
+      - name: Build Codex prompt
+        run: |
+          {
+            printf '# Project Rules (AGENTS.md)\n\n'
+            cat AGENTS.md
+            printf '\n\n---\n\n'
+            cat .github/codex/prompts/review.md
+          } > /tmp/codex-review-prompt.md
+
+      - name: Run Codex (attempt 1)
+        id: run_codex_1
+        continue-on-error: true
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: /tmp/codex-review-prompt.md
+          output-file: codex-output.md
+
+      - name: Wait before retry
+        if: steps.run_codex_1.outcome == 'failure'
+        run: sleep 30
+
+      - name: Run Codex (attempt 2)
+        id: run_codex_2
+        if: steps.run_codex_1.outcome == 'failure'
+        continue-on-error: true
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: /tmp/codex-review-prompt.md
+          output-file: codex-output.md
+
+      - name: Resolve Codex output
+        id: resolve_output
+        run: |
+          if [ "${{ steps.run_codex_1.outcome }}" == "success" ]; then
+            echo "final_message=${{ steps.run_codex_1.outputs.final-message }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ steps.run_codex_2.outcome }}" == "success" ]; then
+            echo "final_message=${{ steps.run_codex_2.outputs.final-message }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Classify Codex failure
+        id: handle_failure
+        if: >
+          steps.run_codex_1.outcome == 'failure' &&
+          (steps.run_codex_2.outcome == 'failure' ||
+           steps.run_codex_2.outcome == 'skipped')
+        run: |
+          if grep -q "Quota exceeded" codex-output.md 2>/dev/null; then
+            echo "codex_failed=true" >> "$GITHUB_OUTPUT"
+            echo "failure_reason=quota" >> "$GITHUB_OUTPUT"
+          elif grep -q "401\|Unauthorized\|Invalid API key" codex-output.md 2>/dev/null; then
+            echo "codex_failed=true" >> "$GITHUB_OUTPUT"
+            echo "failure_reason=auth" >> "$GITHUB_OUTPUT"
+          else
+            echo "codex_failed=true" >> "$GITHUB_OUTPUT"
+            echo "failure_reason=unknown" >> "$GITHUB_OUTPUT"
+          fi
+
+  post_feedback:
+    runs-on: ubuntu-latest
+    needs: codex
+    if: >
+      always() &&
+      (
+        needs.codex.outputs.final_message != '' ||
+        needs.codex.outputs.codex_failed == 'true'
+      )
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Post Codex feedback
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const failed = process.env.CODEX_FAILED === 'true';
+            const reason = process.env.CODEX_FAILURE_REASON;
+            const message = process.env.CODEX_FINAL_MESSAGE;
+
+            const failureMessages = {
+              quota: [
+                '### 🤖 Codex Review — Quota Exceeded',
+                '',
+                '> ⚠️ The automated review was skipped because the OpenAI account has',
+                '> exceeded its usage quota.',
+                '',
+                '**Action required:** Check [OpenAI billing](https://platform.openai.com/settings/organization/billing)',
+                'and top up credits or increase the usage limit.',
+                '',
+                'In the meantime, please review this PR manually against',
+                '[`AGENTS.md`](../../blob/main/AGENTS.md).',
+              ].join('\n'),
+
+              auth: [
+                '### 🤖 Codex Review — Authentication Error',
+                '',
+                '> ⚠️ The automated review failed due to an invalid or missing API key.',
+                '',
+                '**Action required:** Verify that `OPENAI_API_KEY` is correctly set in',
+                '[repository secrets](../../settings/secrets/actions).',
+              ].join('\n'),
+
+              unknown: [
+                '### 🤖 Codex Review — Unexpected Error',
+                '',
+                '> ⚠️ The automated review failed for an unknown reason.',
+                '> Check the [workflow run logs](../../actions) for details.',
+                '',
+                'Please review this PR manually against',
+                '[`AGENTS.md`](../../blob/main/AGENTS.md).',
+              ].join('\n'),
+            };
+
+            const body = failed
+              ? (failureMessages[reason] ?? failureMessages.unknown)
+              : `### 🤖 Codex Review Feedback\n\n${message}`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body,
+            });
+        env:
+          CODEX_FINAL_MESSAGE: ${{ needs.codex.outputs.final_message }}
+          CODEX_FAILED: ${{ needs.codex.outputs.codex_failed }}
+          CODEX_FAILURE_REASON: ${{ needs.codex.outputs.failure_reason }}

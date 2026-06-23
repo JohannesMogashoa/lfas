@@ -1,5 +1,5 @@
 {
-    "name": "@lfas/statement-processing",
+    "name": "@lfas/domain",
     "version": "0.0.0",
     "type": "module",
     "private": true,
@@ -8,10 +8,6 @@
         "format": "prettier --write \"src/**/*.ts\" \"*.{ts,js,json}\"",
         "typecheck": "tsc --noEmit",
         "test": "node --experimental-strip-types --test \"src/**/*.test.ts\""
-    },
-    "dependencies": {
-        "@lfas/bank-statement-parser": "workspace:*",
-        "@lfas/domain": "workspace:*"
     },
     "devDependencies": {
         "@lfas/eslint-config": "workspace:*",
@@ -24,10 +20,6 @@
         ".": {
             "types": "./src/index.ts",
             "default": "./src/index.ts"
-        },
-        "./states": {
-            "types": "./src/states.ts",
-            "default": "./src/states.ts"
         }
     }
 }

@@ -1,10 +1,12 @@
 import type { Bank } from "@lfas/bank-statement-parser";
+import type {
+    CanonicalTransaction,
+    CurrencyCode,
+    Money,
+    TransactionDirection,
+} from "@lfas/domain";
 
 import type { ProcessingEvent, ProcessingState } from "./states.ts";
-
-export type CurrencyCode = "ZAR";
-
-export type TransactionDirection = "debit" | "credit";
 
 export type ParserTransactionLike = {
     readonly date: string;
@@ -16,10 +18,10 @@ export type ParserTransactionLike = {
 
 export type NormalizedStatementTransaction = {
     readonly bank: Bank;
-    readonly date: string;
-    readonly description: string;
-    readonly amountMinor: number;
-    readonly balanceMinor?: number;
+    readonly date: CanonicalTransaction["date"];
+    readonly description: CanonicalTransaction["description"];
+    readonly amountMinor: Money["amountMinor"];
+    readonly balanceMinor?: Money["amountMinor"];
     readonly currency: CurrencyCode;
     readonly direction: TransactionDirection;
     readonly sourceLineNumber: number;

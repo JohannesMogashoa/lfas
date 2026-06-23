@@ -11,11 +11,15 @@ export {
 export { parseDecimalAmountToMinorUnits } from "./money.ts";
 export { normalizeParsedTransactions } from "./normalization.ts";
 export type {
+    CanonicalTransaction,
     CurrencyCode,
+    Money,
+    TransactionDirection,
+} from "@lfas/domain";
+export type {
     NormalizedStatementTransaction,
     ParserTransactionLike,
     ProcessingEventRecord,
     ReportDescriptor,
     StatementSubmissionMetadata,
-    TransactionDirection,
 } from "./types.ts";
