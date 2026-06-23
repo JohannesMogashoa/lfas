@@ -10,6 +10,15 @@ export {
 } from "./idempotency.ts";
 export { parseDecimalAmountToMinorUnits } from "./money.ts";
 export { normalizeParsedTransactions } from "./normalization.ts";
+export {
+    createDuplicateTransactionFingerprint,
+    createValidationReport,
+    detectDuplicateTransactions,
+    detectTransactionGaps,
+    validateBoundaryBalances,
+    validateRunningBalances,
+    validateStatement,
+} from "./validation.ts";
 export type {
     CanonicalTransaction,
     CurrencyCode,
@@ -23,3 +32,11 @@ export type {
     ReportDescriptor,
     StatementSubmissionMetadata,
 } from "./types.ts";
+export type {
+    StatementValidationInput,
+    ValidationCode,
+    ValidationFinding,
+    ValidationReport,
+    ValidationReportSummary,
+    ValidationSeverity,
+} from "./validation.ts";
