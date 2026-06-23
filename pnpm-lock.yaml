@@ -90,6 +90,9 @@ importers:
 
   packages/bank-statement-parser:
     dependencies:
+      '@lfas/domain':
+        specifier: workspace:*
+        version: link:../domain
       unpdf:
         specifier: ^1.6.2
         version: 1.6.2

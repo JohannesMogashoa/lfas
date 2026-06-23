@@ -23,6 +23,20 @@ export { default as parseNedbankStatement } from "./parsers/nedbank.ts";
 export { default as parseStandardBankStatement } from "./parsers/standard-bank.ts";
 export { bankRegistry, getBankRegistryEntry } from "./bank-registry.ts";
 export {
+    extractDescriptionAndReference,
+    extractTransactionAmount,
+    extractTransactionBalance,
+    extractTransactionDate,
+    parseGenericTableRow,
+} from "./extraction/index.ts";
+export type {
+    ExtractedDate,
+    ExtractedDescription,
+    ExtractedMoney,
+    GenericTableRow,
+    TextSpan,
+} from "./extraction/index.ts";
+export {
     detectBankFromTextLines,
     detectBankStatementPdf,
     parseDetectedBankStatementPdf,

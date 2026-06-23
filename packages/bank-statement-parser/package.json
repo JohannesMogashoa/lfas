@@ -10,6 +10,7 @@
         "test": "node --experimental-strip-types --test \"src/**/*.test.ts\""
     },
     "dependencies": {
+        "@lfas/domain": "workspace:*",
         "unpdf": "^1.6.2"
     },
     "devDependencies": {
