@@ -16,6 +16,7 @@ export { default as parseAbsaStatement } from "./parsers/absa.ts";
 export { default as parseCapitecStatement } from "./parsers/capitec.ts";
 export { default as parseFnbStatement } from "./parsers/fnb.ts";
 export { default as parseInvestecStatement } from "./parsers/investec.ts";
+export { extractPdfTextLines } from "./pdf.ts";
 
 export async function parseBankStatementPdf(
     bytes: ArrayBuffer,

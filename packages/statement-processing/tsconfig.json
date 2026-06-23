@@ -1,7 +1,8 @@
 {
     "extends": "@lfas/typescript-config/base.json",
     "compilerOptions": {
-        "allowImportingTsExtensions": true
+        "noEmit": true,
+        "allowImportingTsExtensions": true,
     },
     "include": ["src/**/*.ts"],
     "exclude": ["node_modules", "dist"]

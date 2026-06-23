@@ -1,12 +1,6 @@
-import {
-    extractTextItems,
-    getDocumentProxy,
-    type StructuredTextItem,
-} from "unpdf";
-
 import type { BankStatementParseResult, BankTransaction } from "../types";
+import { extractPdfTextLines } from "../pdf.ts";
 
-const ROW_Y_TOLERANCE = 1.5;
 type InvestecSection = "account" | "online-banking" | "card" | "other";
 
 const INVESTEC_BOILERPLATE_PATTERNS = [
@@ -41,9 +35,7 @@ const INVESTEC_BOILERPLATE_PATTERNS = [
 export default async function parseInvestecStatement(
     bytes: ArrayBuffer
 ): Promise<BankStatementParseResult> {
-    const pdf = await getDocumentProxy(new Uint8Array(bytes));
-    const { items } = await extractTextItems(pdf);
-    const lines = items.flatMap((pageItems) => extractLinesFromPage(pageItems));
+    const lines = await extractPdfTextLines(bytes);
     const transactions = parseInvestecTextLines(lines);
 
     return {
@@ -171,45 +163,6 @@ export function parseInvestecTransactionLine(
             : "Debit",
         transactionDescription,
     };
-}
-
-function extractLinesFromPage(items: readonly StructuredTextItem[]): string[] {
-    const rows: { items: StructuredTextItem[]; y: number }[] = [];
-
-    for (const item of [...items].sort((left, right) => {
-        if (right.y !== left.y) {
-            return right.y - left.y;
-        }
-
-        return left.x - right.x;
-    })) {
-        if (!item.str.trim()) {
-            continue;
-        }
-
-        const lastRow = rows.at(-1);
-
-        if (!lastRow || Math.abs(lastRow.y - item.y) > ROW_Y_TOLERANCE) {
-            rows.push({
-                items: [item],
-                y: item.y,
-            });
-            continue;
-        }
-
-        lastRow.items.push(item);
-        lastRow.y = (lastRow.y + item.y) / 2;
-    }
-
-    return rows
-        .map((row) =>
-            row.items
-                .sort((left, right) => left.x - right.x)
-                .map((item) => item.str)
-                .join(" ")
-        )
-        .map(normalizeText)
-        .filter(Boolean);
 }
 
 function matchLeadingDateText(
