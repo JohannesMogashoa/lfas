@@ -11,6 +11,7 @@ import {
     createIdempotencyKey,
     createSourceFingerprint,
     normalizeParsedTransactions,
+    validateStatement,
 } from "@lfas/statement-processing";
 import { ConvexHttpClient } from "convex/browser";
 
@@ -167,6 +168,9 @@ async function processStatementFile(file: File, result: StatementUploadResult) {
             detection.bank,
             parsedStatement.transactions
         );
+        const validationReport = validateStatement({
+            transactions: normalizedTransactions,
+        });
 
         if (client === null) {
             result.warnings.push(
@@ -194,7 +198,11 @@ async function processStatementFile(file: File, result: StatementUploadResult) {
         await client.mutation(api.statements.completeValidation, {
             jobId: durableJob.jobId,
             safeDetails: {
+                failureCount: validationReport.summary.failureCount,
+                findingCount: validationReport.summary.findingCount,
+                outcome: validationReport.outcome,
                 transactionCount: normalizedTransactions.length,
+                warningCount: validationReport.summary.warningCount,
             },
             submissionId: durableJob.submissionId,
         });

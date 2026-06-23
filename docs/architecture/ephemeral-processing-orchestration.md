@@ -44,6 +44,10 @@ Convex tables are intentionally source-safe:
   failure metadata.
 - `statementEvents` stores state transitions and safe counters.
 - `statementTransactions` stores normalized structured transactions.
+- Validation completion events store only validation report summaries: outcome,
+  finding count, warning count, failure count, and transaction count. Detailed
+  findings must remain bounded to stable validation codes, counts, dates,
+  minor-unit deltas, and source line references.
 - `statementReports` stores report metadata and optional generated report
   storage IDs.
 - `statementAuditEvents` stores upload acceptance and source disposal audit
