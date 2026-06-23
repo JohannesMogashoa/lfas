@@ -110,6 +110,24 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
 
+  packages/domain:
+    devDependencies:
+      '@lfas/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@lfas/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.15.3
+        version: 22.19.21
+      eslint:
+        specifier: ^9.39.1
+        version: 9.39.4(jiti@2.7.0)
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
+
   packages/eslint-config:
     devDependencies:
       '@eslint/js':
@@ -157,6 +175,9 @@ importers:
       '@lfas/bank-statement-parser':
         specifier: workspace:*
         version: link:../bank-statement-parser
+      '@lfas/domain':
+        specifier: workspace:*
+        version: link:../domain
     devDependencies:
       '@lfas/eslint-config':
         specifier: workspace:*

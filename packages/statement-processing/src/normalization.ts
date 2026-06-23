@@ -1,6 +1,6 @@
 import type { Bank } from "@lfas/bank-statement-parser";
+import { createCanonicalTransaction, parseDecimalMoney } from "@lfas/domain";
 
-import { parseDecimalAmountToMinorUnits } from "./money.ts";
 import type {
     NormalizedStatementTransaction,
     ParserTransactionLike,
@@ -10,17 +10,32 @@ export function normalizeParsedTransactions(
     bank: Bank,
     transactions: readonly ParserTransactionLike[]
 ): NormalizedStatementTransaction[] {
-    return transactions.map((transaction, index) => ({
-        amountMinor: parseDecimalAmountToMinorUnits(transaction.amount),
-        balanceMinor:
+    return transactions.map((transaction, index) => {
+        const amount = parseDecimalMoney(transaction.amount);
+        const runningBalance =
             transaction.balance === undefined
                 ? undefined
-                : parseDecimalAmountToMinorUnits(transaction.balance),
-        bank,
-        currency: "ZAR",
-        date: transaction.date,
-        description: transaction.transactionDescription,
-        direction: transaction.debitOrCredit === "Debit" ? "debit" : "credit",
-        sourceLineNumber: index + 1,
-    }));
+                : parseDecimalMoney(transaction.balance);
+        const canonicalTransaction = createCanonicalTransaction({
+            amount,
+            date: transaction.date,
+            description: transaction.transactionDescription,
+            direction:
+                transaction.debitOrCredit === "Debit" ? "debit" : "credit",
+            id: `${bank}-${index + 1}`,
+            runningBalance,
+            sourceLineNumber: index + 1,
+        });
+
+        return {
+            amountMinor: canonicalTransaction.amount.amountMinor,
+            balanceMinor: canonicalTransaction.runningBalance?.amountMinor,
+            bank,
+            currency: canonicalTransaction.amount.currency,
+            date: canonicalTransaction.date,
+            description: canonicalTransaction.description,
+            direction: canonicalTransaction.direction,
+            sourceLineNumber: index + 1,
+        };
+    });
 }
