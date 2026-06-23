@@ -5,7 +5,9 @@ const bank = v.union(
     v.literal("investec"),
     v.literal("absa"),
     v.literal("fnb"),
-    v.literal("capitec")
+    v.literal("capitec"),
+    v.literal("standard_bank"),
+    v.literal("nedbank")
 );
 
 const processingState = v.union(
