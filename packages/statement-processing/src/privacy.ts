@@ -128,6 +128,17 @@ type InternalPrivacyMatch = PrivacyFinding & {
     readonly value: string;
 };
 
+type LabeledDigitDetectorConfig = {
+    readonly type: PrivacyFindingType;
+    readonly labelPattern: RegExp;
+    readonly minDigits: number;
+    readonly maxDigits: number;
+    readonly maxLookahead: number;
+    readonly allowLeadingPlus: boolean;
+    readonly allowedSeparators: ReadonlySet<string>;
+    readonly confidence: PrivacyFindingConfidence;
+};
+
 const unsafeAiContractKeys = new Set([
     "rawStatementText",
     "originalPdfBytes",
@@ -282,27 +293,36 @@ function detectInternalMatches(
     return dedupeOverlappingMatches([
         ...detectCardNumbers(chunk, chunkIndex),
         ...detectEmails(chunk, chunkIndex),
-        ...detectLabeledDigitSequence(
-            chunk,
-            chunkIndex,
-            "account_number",
-            /\b(?:account|acct|acc)\s*(?:no|number|#)?\s*[:.-]?\s*(?<value>\d[\d -]{6,16}\d)\b/giu,
-            "medium"
-        ),
-        ...detectLabeledDigitSequence(
-            chunk,
-            chunkIndex,
-            "identity_number",
-            /\b(?:id|identity)\s*(?:no|number|#)?\s*[:.-]?\s*(?<value>\d[\d -]{8,16}\d)\b/giu,
-            "medium"
-        ),
-        ...detectLabeledDigitSequence(
-            chunk,
-            chunkIndex,
-            "phone_number",
-            /\b(?:phone|mobile|cell|tel)\s*(?:no|number|#)?\s*[:.-]?\s*(?<value>(?:\+?\d[\d ()-]{7,18}\d))\b/giu,
-            "medium"
-        ),
+        ...detectLabeledDigitSequence(chunk, chunkIndex, {
+            allowLeadingPlus: false,
+            allowedSeparators: new Set([" ", "-"]),
+            confidence: "medium",
+            labelPattern: /\b(?:account|acct|acc)\b/giu,
+            maxDigits: 18,
+            maxLookahead: 64,
+            minDigits: 8,
+            type: "account_number",
+        }),
+        ...detectLabeledDigitSequence(chunk, chunkIndex, {
+            allowLeadingPlus: false,
+            allowedSeparators: new Set([" ", "-"]),
+            confidence: "medium",
+            labelPattern: /\b(?:id|identity)\b/giu,
+            maxDigits: 17,
+            maxLookahead: 64,
+            minDigits: 9,
+            type: "identity_number",
+        }),
+        ...detectLabeledDigitSequence(chunk, chunkIndex, {
+            allowLeadingPlus: true,
+            allowedSeparators: new Set([" ", "(", ")", "-"]),
+            confidence: "medium",
+            labelPattern: /\b(?:phone|mobile|cell|tel)\b/giu,
+            maxDigits: 18,
+            maxLookahead: 64,
+            minDigits: 8,
+            type: "phone_number",
+        }),
     ]);
 }
 
@@ -365,32 +385,163 @@ function detectEmails(
 function detectLabeledDigitSequence(
     chunk: PrivacyTextChunk,
     chunkIndex: number,
-    type: PrivacyFindingType,
-    pattern: RegExp,
-    confidence: PrivacyFindingConfidence
+    config: LabeledDigitDetectorConfig
 ): readonly InternalPrivacyMatch[] {
     const matches: InternalPrivacyMatch[] = [];
 
-    for (const match of chunk.text.matchAll(pattern)) {
-        const value = match.groups?.["value"] ?? match[0];
-        const startOffset = match.index + match[0].indexOf(value);
-        const digitCount = normalizeSensitiveValue(value).length;
+    for (const match of chunk.text.matchAll(config.labelPattern)) {
+        const candidate = readLabeledDigitCandidate(
+            chunk.text,
+            match.index + match[0].length,
+            config
+        );
 
-        if (digitCount >= 8) {
+        if (candidate !== null) {
             matches.push(
                 createInternalMatch(
                     chunk,
                     chunkIndex,
-                    type,
-                    confidence,
-                    startOffset,
-                    value
+                    config.type,
+                    config.confidence,
+                    candidate.startOffset,
+                    candidate.value
                 )
             );
         }
     }
 
     return matches;
+}
+
+function readLabeledDigitCandidate(
+    text: string,
+    startOffset: number,
+    config: LabeledDigitDetectorConfig
+): { readonly startOffset: number; readonly value: string } | null {
+    const maxEndOffset = Math.min(
+        text.length,
+        startOffset + config.maxLookahead
+    );
+    let offset = skipLabelNoise(text, startOffset, maxEndOffset);
+    offset = skipOptionalDescriptor(text, offset, maxEndOffset);
+    offset = skipLabelNoise(text, offset, maxEndOffset);
+
+    const valueStartOffset = offset;
+    let valueEndOffset = offset;
+    let digitCount = 0;
+
+    while (valueEndOffset < maxEndOffset) {
+        const char = text[valueEndOffset] ?? "";
+
+        if (isDigit(char)) {
+            digitCount += 1;
+            valueEndOffset += 1;
+            continue;
+        }
+
+        if (
+            config.allowLeadingPlus &&
+            char === "+" &&
+            valueEndOffset === valueStartOffset
+        ) {
+            valueEndOffset += 1;
+            continue;
+        }
+
+        if (config.allowedSeparators.has(char)) {
+            valueEndOffset += 1;
+            continue;
+        }
+
+        break;
+    }
+
+    const trimmed = trimCandidateValue(
+        text.slice(valueStartOffset, valueEndOffset),
+        valueStartOffset
+    );
+
+    if (
+        trimmed === null ||
+        digitCount < config.minDigits ||
+        digitCount > config.maxDigits
+    ) {
+        return null;
+    }
+
+    return trimmed;
+}
+
+function skipLabelNoise(
+    text: string,
+    startOffset: number,
+    maxEndOffset: number
+) {
+    let offset = startOffset;
+
+    while (offset < maxEndOffset) {
+        const char = text[offset] ?? "";
+
+        if (
+            char === " " ||
+            char === "\t" ||
+            char === ":" ||
+            char === "." ||
+            char === "-"
+        ) {
+            offset += 1;
+            continue;
+        }
+
+        break;
+    }
+
+    return offset;
+}
+
+function skipOptionalDescriptor(
+    text: string,
+    startOffset: number,
+    maxEndOffset: number
+) {
+    const remaining = text.slice(startOffset, maxEndOffset).toLowerCase();
+
+    for (const descriptor of ["number", "no", "#"]) {
+        if (
+            remaining.startsWith(descriptor) &&
+            !isAsciiLetter(remaining[descriptor.length] ?? "")
+        ) {
+            return startOffset + descriptor.length;
+        }
+    }
+
+    return startOffset;
+}
+
+function trimCandidateValue(value: string, startOffset: number) {
+    const leadingTrimmed = value.match(/^\D*/u)?.[0].length ?? 0;
+    const trailingTrimmed = value.match(/\D*$/u)?.[0].length ?? 0;
+    const trimmed = value.slice(
+        leadingTrimmed,
+        trailingTrimmed === 0 ? value.length : -trailingTrimmed
+    );
+
+    if (trimmed === "") {
+        return null;
+    }
+
+    return {
+        startOffset: startOffset + leadingTrimmed,
+        value: trimmed,
+    };
+}
+
+function isDigit(char: string) {
+    return char >= "0" && char <= "9";
+}
+
+function isAsciiLetter(char: string) {
+    return (char >= "a" && char <= "z") || (char >= "A" && char <= "Z");
 }
 
 function createInternalMatch(

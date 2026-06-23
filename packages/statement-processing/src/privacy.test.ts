@@ -79,6 +79,20 @@ describe("privacy detection", () => {
         assert.equal(result.findings.length, 0);
         assert.equal(result.summary.findingCount, 0);
     });
+
+    it("handles repeated spaces after labels without regex backtracking", () => {
+        const spaces = " ".repeat(25_000);
+        const result = detectSensitiveContent({
+            chunks: [
+                {
+                    text: `account${spaces}x identity${spaces}x phone${spaces}x`,
+                },
+            ],
+        });
+
+        assert.equal(result.findings.length, 0);
+        assert.equal(result.summary.findingCount, 0);
+    });
 });
 
 describe("privacy masking and tokenization", () => {
