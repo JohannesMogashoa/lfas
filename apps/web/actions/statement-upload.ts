@@ -4,9 +4,8 @@ import { createHash, randomUUID } from "node:crypto";
 
 import type { FileWithPreview } from "@/hooks/use-file-upload";
 import {
-    Bank,
     type BankTransaction,
-    parseBankStatementPdf,
+    parseDetectedBankStatementPdf,
 } from "@lfas/bank-statement-parser";
 import {
     createIdempotencyKey,
@@ -83,7 +82,6 @@ function createEmptyUploadResult(): StatementUploadResult {
 async function processStatementFile(file: File, result: StatementUploadResult) {
     const client = createConvexClient();
     const bytes = await file.arrayBuffer();
-    const bank = Bank.INVESTEC;
     const userId = "anonymous";
     const uploadId = randomUUID();
     const correlationId = randomUUID();
@@ -97,8 +95,14 @@ async function processStatementFile(file: File, result: StatementUploadResult) {
         readonly jobId?: Id<"statementJobs">;
         readonly submissionId: Id<"statementSubmissions">;
     } | null = null;
+    let durableFailureRecorded = false;
 
     try {
+        const parsedStatement = await parseDetectedBankStatementPdf(bytes);
+        const detection = parsedStatement.detection;
+        const bank =
+            detection.status === "detected" ? detection.bank : undefined;
+
         durableJob =
             client === null
                 ? null
@@ -132,17 +136,37 @@ async function processStatementFile(file: File, result: StatementUploadResult) {
             });
         }
 
-        const { transactions, warnings } = await parseBankStatementPdf(
-            bytes,
-            bank
-        );
-        const normalizedTransactions = normalizeParsedTransactions(
-            bank,
-            transactions
-        );
+        result.transactions.push(...parsedStatement.transactions);
+        result.warnings.push(...parsedStatement.warnings);
 
-        result.transactions.push(...transactions);
-        result.warnings.push(...warnings);
+        if (detection.status === "unknown") {
+            durableFailureRecorded = await failDurableProcessing(client, {
+                durableJob,
+                failureCode: "bank_detection_unknown",
+                failureMessageSafe:
+                    "Statement bank could not be identified from supported detection signals.",
+            });
+            result.failed.push(file.name);
+            result.error = "One or more statements could not be processed.";
+            return;
+        }
+
+        if (detection.implementationStatus === "placeholder") {
+            durableFailureRecorded = await failDurableProcessing(client, {
+                durableJob,
+                failureCode: "bank_parser_not_implemented",
+                failureMessageSafe:
+                    "Statement bank was detected, but its parser is not implemented yet.",
+            });
+            result.failed.push(file.name);
+            result.error = "One or more statements could not be processed.";
+            return;
+        }
+
+        const normalizedTransactions = normalizeParsedTransactions(
+            detection.bank,
+            parsedStatement.transactions
+        );
 
         if (client === null) {
             result.warnings.push(
@@ -162,7 +186,7 @@ async function processStatementFile(file: File, result: StatementUploadResult) {
             jobId: durableJob.jobId,
             safeDetails: {
                 transactionCount: normalizedTransactions.length,
-                warningCount: warnings.length,
+                warningCount: parsedStatement.warnings.length,
             },
             submissionId: durableJob.submissionId,
             transactions: normalizedTransactions,
@@ -180,13 +204,13 @@ async function processStatementFile(file: File, result: StatementUploadResult) {
         });
         await client.mutation(api.statements.markReportReady, {
             checksum: checksumNormalizedTransactions(normalizedTransactions),
-            downloadName: `${bank}-statement-transactions.json`,
+            downloadName: `${detection.bank}-statement-transactions.json`,
             format: "json",
             jobId: durableJob.jobId,
             submissionId: durableJob.submissionId,
         });
     } catch (error) {
-        if (client !== null && durableJob?.jobId) {
+        if (client !== null && durableJob?.jobId && !durableFailureRecorded) {
             await client.mutation(api.statements.failJob, {
                 failureCode: "statement_processing_failed",
                 failureMessageSafe:
@@ -208,6 +232,36 @@ function createConvexClient() {
         process.env.CONVEX_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL;
 
     return convexUrl ? new ConvexHttpClient(convexUrl) : null;
+}
+
+async function failDurableProcessing(
+    client: ConvexHttpClient | null,
+    args: {
+        readonly durableJob: {
+            readonly duplicate: boolean;
+            readonly jobId?: Id<"statementJobs">;
+            readonly submissionId: Id<"statementSubmissions">;
+        } | null;
+        readonly failureCode: string;
+        readonly failureMessageSafe: string;
+    }
+) {
+    if (
+        client === null ||
+        args.durableJob?.duplicate === true ||
+        !args.durableJob?.jobId
+    ) {
+        return false;
+    }
+
+    await client.mutation(api.statements.failJob, {
+        failureCode: args.failureCode,
+        failureMessageSafe: args.failureMessageSafe,
+        jobId: args.durableJob.jobId,
+        submissionId: args.durableJob.submissionId,
+    });
+
+    return true;
 }
 
 function getStatementFingerprintSecret() {

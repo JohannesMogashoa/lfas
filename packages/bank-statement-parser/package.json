@@ -7,7 +7,7 @@
         "lint": "eslint",
         "format": "prettier --write \"src/**/*.ts\" \"*.{ts,js,json}\"",
         "typecheck": "tsc --noEmit",
-        "test": "node --experimental-strip-types --test src/parsers/*.test.ts"
+        "test": "node --experimental-strip-types --test \"src/**/*.test.ts\""
     },
     "dependencies": {
         "unpdf": "^1.6.2"
