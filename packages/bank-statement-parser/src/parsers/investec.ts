@@ -1,4 +1,12 @@
 import type { BankStatementParseResult, BankTransaction } from "../types";
+import {
+    extractTransactionAmount,
+    extractTransactionDate,
+    hasTrailingMoney,
+    normalizeText,
+    parseGenericTableRow,
+    parseMoneyMinorUnits,
+} from "../extraction/index.ts";
 import { extractPdfTextLines } from "../pdf.ts";
 
 type InvestecSection = "account" | "online-banking" | "card" | "other";
@@ -127,121 +135,19 @@ export function parseInvestecTextLines(
 export function parseInvestecTransactionLine(
     line: string
 ): BankTransaction | null {
-    const dateMatch = matchLeadingDateText(line);
+    const parsedRow = parseGenericTableRow(line);
 
-    if (!dateMatch) {
-        return null;
-    }
-
-    let remainder = line.slice(dateMatch.length).trimStart();
-    const valueDateMatch = matchLeadingDateText(remainder);
-
-    if (valueDateMatch) {
-        remainder = remainder.slice(valueDateMatch.length).trimStart();
-    }
-
-    const trailingMoney = takeTrailingMoneyTokens(remainder);
-
-    if (!trailingMoney.amount) {
-        return null;
-    }
-
-    const transactionDescription = normalizeText(
-        remainder.slice(0, trailingMoney.descriptionEnd)
-    );
-
-    if (!transactionDescription) {
+    if (!parsedRow) {
         return null;
     }
 
     return {
-        amount: trailingMoney.amount,
-        balance: trailingMoney.balance,
-        date: dateMatch.isoDate,
-        debitOrCredit: trailingMoney.amount.startsWith("-")
-            ? "Credit"
-            : "Debit",
-        transactionDescription,
+        amount: parsedRow.amount.normalizedText,
+        balance: parsedRow.balance?.normalizedText,
+        date: parsedRow.date.isoDate,
+        debitOrCredit: parsedRow.debitOrCredit,
+        transactionDescription: parsedRow.description,
     };
-}
-
-function matchLeadingDateText(
-    value: string
-): { isoDate: string; length: number } | null {
-    const isoMatch = value.match(/^(\d{4})\s*[-/]\s*(\d{2})\s*[-/]\s*(\d{2})/u);
-
-    if (isoMatch) {
-        return {
-            isoDate: `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`,
-            length: isoMatch[0].length,
-        };
-    }
-
-    const numericDateMatch = value.match(
-        /^(\d{1,2})\s*[/-]\s*(\d{1,2})\s*[/-]\s*(\d{4})/u
-    );
-
-    if (numericDateMatch) {
-        const day = numericDateMatch[1]!.padStart(2, "0");
-        const month = numericDateMatch[2]!.padStart(2, "0");
-
-        return {
-            isoDate: `${numericDateMatch[3]}-${month}-${day}`,
-            length: numericDateMatch[0].length,
-        };
-    }
-
-    const textDateMatch = value.match(
-        /^(\d{1,2})\s*([A-Za-z]{3,9})\s*(\d{4})/u
-    );
-
-    if (!textDateMatch) {
-        return null;
-    }
-
-    const month = monthToNumber(textDateMatch[2]!);
-
-    if (!month) {
-        return null;
-    }
-
-    const day = textDateMatch[1]!.padStart(2, "0");
-
-    return {
-        isoDate: `${textDateMatch[3]}-${month}-${day}`,
-        length: textDateMatch[0].length,
-    };
-}
-
-function monthToNumber(month: string): string | null {
-    const lookup = new Map<string, string>([
-        ["jan", "01"],
-        ["january", "01"],
-        ["feb", "02"],
-        ["february", "02"],
-        ["mar", "03"],
-        ["march", "03"],
-        ["apr", "04"],
-        ["april", "04"],
-        ["may", "05"],
-        ["jun", "06"],
-        ["june", "06"],
-        ["jul", "07"],
-        ["july", "07"],
-        ["aug", "08"],
-        ["august", "08"],
-        ["sep", "09"],
-        ["sept", "09"],
-        ["september", "09"],
-        ["oct", "10"],
-        ["october", "10"],
-        ["nov", "11"],
-        ["november", "11"],
-        ["dec", "12"],
-        ["december", "12"],
-    ]);
-
-    return lookup.get(month.toLowerCase()) ?? null;
 }
 
 function matchInvestecSectionHeader(value: string): InvestecSection | null {
@@ -273,13 +179,13 @@ function parseStandaloneInvestecBalanceLine(value: string): bigint | null {
         return null;
     }
 
-    const trailingMoney = takeTrailingMoneyTokens(value);
+    const trailingMoney = extractTransactionAmount(value);
 
-    if (!trailingMoney.amount) {
+    if (!trailingMoney) {
         return null;
     }
 
-    return parseMoneyMinorUnits(trailingMoney.amount);
+    return BigInt(trailingMoney.money.amountMinor);
 }
 
 function settleInvestecTransactionDirection(
@@ -330,139 +236,6 @@ function isDebitLikeOnlineBankingDescription(description: string) {
     return /fee|charge|debitinterest|servicecharge/i.test(description);
 }
 
-function takeTrailingMoneyTokens(text: string): {
-    amount?: string;
-    balance?: string;
-    descriptionEnd: number;
-} {
-    const tokens = tokenize(text);
-    let end = tokens.length;
-
-    while (end > 0 && isDecorativeToken(tokens[end - 1]?.value ?? "")) {
-        end -= 1;
-    }
-
-    if (end === 0) {
-        return { descriptionEnd: 0 };
-    }
-
-    const lastToken = tokens[end - 1]!;
-
-    if (!isMoneyToken(lastToken.value)) {
-        return { descriptionEnd: text.length };
-    }
-
-    const precedingToken = end > 1 ? tokens[end - 2]! : undefined;
-    const precedingMoneyToken = end > 2 ? tokens[end - 3]! : undefined;
-
-    if (precedingToken && isMoneyToken(precedingToken.value)) {
-        return {
-            amount: normalizeMoneyText(precedingToken.value),
-            balance: normalizeMoneyText(lastToken.value),
-            descriptionEnd: precedingToken.start,
-        };
-    }
-
-    if (precedingToken && isDecorativeToken(precedingToken.value)) {
-        return {
-            amount: normalizeMoneyText(lastToken.value),
-            descriptionEnd:
-                precedingMoneyToken && isMoneyToken(precedingMoneyToken.value)
-                    ? precedingMoneyToken.start
-                    : precedingToken.start,
-        };
-    }
-
-    return {
-        amount: normalizeMoneyText(lastToken.value),
-        descriptionEnd: lastToken.start,
-    };
-}
-
-function tokenize(text: string) {
-    const tokens: { end: number; start: number; value: string }[] = [];
-    let index = 0;
-
-    while (index < text.length) {
-        while (index < text.length && /\s/u.test(text[index] ?? "")) {
-            index += 1;
-        }
-
-        const start = index;
-
-        while (index < text.length && !/\s/u.test(text[index] ?? "")) {
-            index += 1;
-        }
-
-        if (start < index) {
-            tokens.push({
-                end: index,
-                start,
-                value: text.slice(start, index),
-            });
-        }
-    }
-
-    return tokens;
-}
-
-function normalizeMoneyText(value: string) {
-    const trimmed = value.trim();
-    const cleaned = trimmed.replace(/^R\s*/iu, "");
-    const isNegative =
-        cleaned.startsWith("(") ||
-        cleaned.startsWith("-") ||
-        cleaned.endsWith("-") ||
-        cleaned.endsWith(")");
-
-    let normalized = cleaned.replace(/[()-]/gu, "").replace(/\s+/gu, "");
-
-    if (normalized.includes(",") && normalized.includes(".")) {
-        normalized = normalized.replace(/,/gu, "");
-    } else if (normalized.includes(",")) {
-        const parts = normalized.split(",");
-
-        if (parts.length === 2 && parts[1]?.length === 2) {
-            normalized = parts.join(".");
-        } else {
-            normalized = normalized.replace(/,/gu, "");
-        }
-    }
-
-    return isNegative ? `-${normalized}` : normalized;
-}
-
-function parseMoneyMinorUnits(value: string): bigint | null {
-    const normalized = normalizeMoneyText(value);
-    const negative = normalized.startsWith("-");
-    const unsigned = negative ? normalized.slice(1) : normalized;
-    const [wholePart, fractionPart = ""] = unsigned.split(".");
-
-    if (!wholePart || !/^\d+$/u.test(wholePart)) {
-        return null;
-    }
-
-    if (fractionPart && !/^\d{1,2}$/u.test(fractionPart)) {
-        return null;
-    }
-
-    const fraction = `${fractionPart}00`.slice(0, 2);
-    const minorUnits = BigInt(wholePart) * 100n + BigInt(fraction);
-
-    return negative ? -minorUnits : minorUnits;
-}
-
-function isMoneyToken(value: string) {
-    return MONEY_TOKEN_RE.test(value);
-}
-
-const MONEY_TOKEN_RE =
-    /^(?:R\s*)?(?:\(|-)?\d+(?:[ ,]\d{3})*(?:[.,]\d{2})(?:\)|-)?$/u;
-
-function isDecorativeToken(value: string) {
-    return /^[~*]+$/u.test(value);
-}
-
 function isInvestecBoilerplateLine(value: string) {
     const squashedValue = squashText(value);
 
@@ -474,13 +247,9 @@ function isInvestecBoilerplateLine(value: string) {
 function isContinuationLine(value: string) {
     return (
         /[A-Za-z0-9]/u.test(value) &&
-        !matchLeadingDateText(value) &&
-        !takeTrailingMoneyTokens(value).amount
+        !extractTransactionDate(value) &&
+        !hasTrailingMoney(value)
     );
-}
-
-function normalizeText(value: string) {
-    return value.replace(/\s+/gu, " ").trim();
 }
 
 function squashText(value: string) {
