@@ -1,7 +1,6 @@
+import type { DebitOrCredit } from "../types.ts";
 import type { Money } from "@lfas/domain";
 import { parseDecimalMoney } from "@lfas/domain";
-
-import type { DebitOrCredit } from "../types.ts";
 
 export type TextSpan = {
     readonly start: number;
@@ -59,8 +58,12 @@ export function extractDescriptionAndReference(
         return null;
     }
 
+    if (normalizedDescription.length >= 500) {
+        return null
+    }
+
     const referenceMatch = normalizedDescription.match(
-        /^(?<description>.+?)\s+(?:ref|reference)\s*[:#-]?\s*(?<reference>[A-Za-z0-9][A-Za-z0-9-]*)$/iu
+        /^(?<description>.*\S)\s+(?:ref|reference)\s*[:#-]?\s*(?<reference>[A-Za-z0-9][A-Za-z0-9-]*)$/iu
     );
 
     if (!referenceMatch?.groups) {
