@@ -39,7 +39,7 @@
     "@lfas/eslint-config": "workspace:*",
     "@lfas/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4",
-    "@turbo/gen": "^2.9.18",
+    "@turbo/gen": "^2.10.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
