@@ -13,7 +13,7 @@
   "devDependencies": {
     "@lfas/eslint-config": "workspace:*",
     "@lfas/typescript-config": "workspace:*",
-    "prettier": "^3.8.4",
+    "prettier": "^3.9.1",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "turbo": "^2.9.18",
     "typescript": "^5"
