@@ -17,7 +17,7 @@
         "@lfas/eslint-config": "workspace:*",
         "@lfas/typescript-config": "workspace:*",
         "@types/node": "^22.15.3",
-        "eslint": "^9.39.1",
+        "eslint": "^10.6.0",
         "typescript": "5.9.2"
     },
     "exports": {
