@@ -14,7 +14,7 @@
     "@lfas/eslint-config": "workspace:*",
     "@lfas/typescript-config": "workspace:*",
     "prettier": "^3.9.5",
-    "prettier-plugin-tailwindcss": "^0.8.0",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "turbo": "^2.10.5",
     "typescript": "^5"
   },
